@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "KItyyXCfUkXvchngvrbyQYLaRMufCH0Z6kjrbDIzpo4=",
+  "Source": "LoadForge.Api",
+  "BasePath": "_content/LoadForge.Api",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}

@@ -1,0 +1,25 @@
+.create-project-page {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  h1 { font-size: 28px; font-weight: 300; }
+}
+
+.form-card { padding: 16px; }
+.full-width { width: 100%; margin-bottom: 8px; }
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+

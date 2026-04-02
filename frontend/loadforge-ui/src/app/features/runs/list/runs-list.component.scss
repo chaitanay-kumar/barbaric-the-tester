@@ -1,0 +1,10 @@
+.runs-page { max-width: 1200px; margin: 0 auto; }
+.page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; h1 { font-size: 28px; font-weight: 300; } }
+.runs-table { width: 100%; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.08); }
+.link { color: #1a237e; text-decoration: none; font-weight: 500; &:hover { text-decoration: underline; } }
+.pass-icon { color: #2e7d32; }
+.fail-icon { color: #c62828; }
+.empty-state { display: flex; flex-direction: column; align-items: center; padding: 64px; color: #999;
+  mat-icon { font-size: 64px; width: 64px; height: 64px; } h2 { margin: 16px 0 8px; } }
+.center-spinner { margin: 48px auto; }
+

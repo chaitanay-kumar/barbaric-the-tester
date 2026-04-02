@@ -1,0 +1,191 @@
+<div class="test-run-detail" *ngIf="run">
+  <a class="back-link" (click)="goBack()">← Back to Runs</a>
+
+  <!-- Real-Time Progress Banner (visible while running) -->
+  <div class="live-progress" *ngIf="isRunning">
+    <div class="live-header">
+      <div class="live-spinner"></div>
+      <div class="live-info">
+        <h2>🚀 Executing Tests — Live Results</h2>
+        <p>{{ completedCount }} / {{ run.totalTests }} completed · {{ elapsedSeconds }}s elapsed</p>
+      </div>
+      <div class="live-counts">
+        <span class="count passed">✅ {{ passedExecutions.length }}</span>
+        <span class="count failed">❌ {{ failedExecutions.length }}</span>
+        <span class="count skipped">⏭️ {{ skippedExecutions.length }}</span>
+      </div>
+      <button class="btn btn-danger btn-sm" (click)="cancelRun()">✕ Cancel Run</button>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" [style.width.%]="progressPercent"></div>
+    </div>
+    <p class="progress-pct">{{ progressPercent }}%</p>
+
+    <!-- Currently Running Test -->
+    <div class="current-test" *ngIf="currentlyRunningTest">
+      <div class="current-test-header">
+        <span class="pulse-dot"></span>
+        <strong>Currently Running:</strong>
+      </div>
+      <div class="current-test-info">
+        <span class="test-name">{{ currentlyRunningTest }}</span>
+      </div>
+    </div>
+
+    <!-- Live Feed of Recent Results -->
+    <div class="live-feed" *ngIf="run.executions && run.executions.length > 0">
+      <h3>📋 Recent Results (showing last 5)</h3>
+      <div class="feed-list">
+        <div *ngFor="let exec of recentExecutions"
+             class="feed-item"
+             [ngClass]="exec.status.toLowerCase()">
+          <span class="feed-status">
+            {{ exec.status === 'Passed' ? '✅' : (exec.status === 'Failed' ? '❌' : '⏭️') }}
+          </span>
+          <span class="feed-name">Test #{{ exec.testCaseId | slice:0:8 }}</span>
+          <span class="feed-code">{{ exec.responseStatusCode || '-' }}</span>
+          <span class="feed-duration">{{ exec.durationMs }}ms</span>
+          <span class="feed-error" *ngIf="exec.errorMessage">{{ exec.errorMessage | slice:0:50 }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Header (shows final stats or live running stats) -->
+  <div class="summary-header" [ngClass]="getStatusClass(run.status)">
+    <div class="summary-status">
+      <span class="status-icon" *ngIf="run.status === 'Passed'">✅</span>
+      <span class="status-icon" *ngIf="run.status === 'Failed'">❌</span>
+      <span class="status-icon" *ngIf="run.status === 'Running'">⏳</span>
+      <h1>Test Run {{ run.status }}</h1>
+    </div>
+    <div class="summary-stats">
+      <div class="stat">
+        <span class="value big">{{ isRunning ? progressPercent : run.passRate }}%</span>
+        <span class="label">{{ isRunning ? 'Progress' : 'Pass Rate' }}</span>
+      </div>
+      <div class="stat">
+        <span class="value">{{ isRunning ? passedExecutions.length : run.passedTests }}</span>
+        <span class="label">Passed</span>
+      </div>
+      <div class="stat">
+        <span class="value failed">{{ isRunning ? failedExecutions.length : run.failedTests }}</span>
+        <span class="label">Failed</span>
+      </div>
+      <div class="stat">
+        <span class="value skipped">{{ isRunning ? skippedExecutions.length : run.skippedTests }}</span>
+        <span class="label">Skipped</span>
+      </div>
+      <div class="stat">
+        <span class="value">{{ run.totalTests }}</span>
+        <span class="label">Total</span>
+      </div>
+      <div class="stat">
+        <span class="value">{{ isRunning ? elapsedSeconds : run.durationSeconds }}s</span>
+        <span class="label">Duration</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Report Downloads (only when complete) -->
+  <div class="report-actions" *ngIf="!isRunning">
+    <span class="report-label">📥 Export Report:</span>
+    <button class="btn btn-sm" (click)="downloadReport('html')">HTML Report</button>
+    <button class="btn btn-sm" (click)="downloadReport('junit')">JUnit XML</button>
+    <button class="btn btn-sm" (click)="downloadReport('json')">JSON</button>
+  </div>
+
+  <!-- Pass Rate Bar -->
+  <div class="pass-rate-visual">
+    <div class="bar passed-bar" [style.width.%]="run.totalTests ? (passedExecutions.length / run.totalTests * 100) : 0"></div>
+    <div class="bar failed-bar" [style.width.%]="run.totalTests ? (failedExecutions.length / run.totalTests * 100) : 0"></div>
+    <div class="bar skipped-bar" [style.width.%]="run.totalTests ? (skippedExecutions.length / run.totalTests * 100) : 0"></div>
+  </div>
+
+  <!-- Failed Tests Section -->
+  <div class="section" *ngIf="failedExecutions.length > 0">
+    <h2>❌ Failed Tests ({{ failedExecutions.length }})</h2>
+    <div class="execution-list">
+      <div *ngFor="let exec of failedExecutions"
+           class="execution-item failed"
+           [class.expanded]="selectedExecution?.id === exec.id"
+           (click)="selectExecution(exec)">
+        <div class="exec-summary">
+          <span class="status-dot failed"></span>
+          <span class="exec-status-code">{{ exec.responseStatusCode || 'N/A' }}</span>
+          <span class="exec-name">Test #{{ exec.testCaseId | slice:0:8 }}</span>
+          <span class="exec-duration">{{ exec.durationMs }}ms</span>
+          <span class="exec-error" *ngIf="exec.errorMessage">{{ exec.errorMessage }}</span>
+        </div>
+        <div class="exec-detail" *ngIf="selectedExecution?.id === exec.id">
+          <div class="detail-block" *ngIf="exec.correlationId">
+            <label>Correlation ID</label>
+            <code>{{ exec.correlationId }}</code>
+          </div>
+          <div class="detail-block" *ngIf="exec.assertionResultsJson">
+            <label>Assertion Results</label>
+            <pre>{{ formatJson(exec.assertionResultsJson) }}</pre>
+          </div>
+          <div class="detail-block" *ngIf="exec.requestJson">
+            <label>Request</label>
+            <pre>{{ formatJson(exec.requestJson) }}</pre>
+          </div>
+          <div class="detail-block" *ngIf="exec.responseJson">
+            <label>Response</label>
+            <pre>{{ formatJson(exec.responseJson) }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Passed Tests Section -->
+  <div class="section" *ngIf="passedExecutions.length > 0">
+    <h2>✅ Passed Tests ({{ passedExecutions.length }})</h2>
+    <div class="execution-list">
+      <div *ngFor="let exec of passedExecutions"
+           class="execution-item passed"
+           [class.expanded]="selectedExecution?.id === exec.id"
+           (click)="selectExecution(exec)">
+        <div class="exec-summary">
+          <span class="status-dot passed"></span>
+          <span class="exec-status-code">{{ exec.responseStatusCode }}</span>
+          <span class="exec-name">Test #{{ exec.testCaseId | slice:0:8 }}</span>
+          <span class="exec-duration">{{ exec.durationMs }}ms</span>
+        </div>
+        <div class="exec-detail" *ngIf="selectedExecution?.id === exec.id">
+          <div class="detail-block" *ngIf="exec.requestJson">
+            <label>Request</label>
+            <pre>{{ formatJson(exec.requestJson) }}</pre>
+          </div>
+          <div class="detail-block" *ngIf="exec.responseJson">
+            <label>Response</label>
+            <pre>{{ formatJson(exec.responseJson) }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Skipped Tests Section -->
+  <div class="section" *ngIf="skippedExecutions.length > 0">
+    <h2>⏭️ Skipped Tests ({{ skippedExecutions.length }})</h2>
+    <div class="execution-list">
+      <div *ngFor="let exec of skippedExecutions" class="execution-item skipped">
+        <div class="exec-summary">
+          <span class="status-dot skipped"></span>
+          <span class="exec-name">Test #{{ exec.testCaseId | slice:0:8 }}</span>
+          <span class="exec-error" *ngIf="exec.errorMessage">{{ exec.errorMessage }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="meta">
+    <span>Started: {{ run.startedAt | date:'medium' }}</span>
+    <span *ngIf="run.completedAt">Completed: {{ run.completedAt | date:'medium' }}</span>
+    <span *ngIf="isRunning" class="meta-running">⏳ Still running...</span>
+  </div>
+</div>
+
+<div *ngIf="loading" class="loading">Loading test run results...</div>

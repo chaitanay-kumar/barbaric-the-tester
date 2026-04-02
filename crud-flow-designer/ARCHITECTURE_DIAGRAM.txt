@@ -1,0 +1,391 @@
+=================================================================
+  CRUD FLOW DESIGNER - MODULAR ARCHITECTURE
+=================================================================
+
+PROJECT STRUCTURE WITH PROPER STATE MANAGEMENT & MODULARITY
+
+=================================================================
+📁 DIRECTORY STRUCTURE
+=================================================================
+
+crud-flow-designer/
+│
+├── src/
+│   │
+│   ├── components/              ✅ PRESENTATION LAYER
+│   │   │                        (UI only, no business logic)
+│   │   ├── nodes/
+│   │   │   ├── StartNode.tsx              → Start flow
+│   │   │   ├── HttpRequestNode.tsx        → REST API calls
+│   │   │   ├── VariableExtractorNode.tsx  → JSONPath extraction
+│   │   │   └── AssertionNode.tsx          → Validation
+│   │   │
+│   │   ├── FlowCanvas.tsx       → React Flow canvas
+│   │   ├── Sidebar.tsx          → Node palette
+│   │   └── Toolbar.tsx          → Action bar
+│   │
+│   ├── hooks/                   ✅ BUSINESS LOGIC LAYER
+│   │   │                        (Reusable hooks, testable)
+│   │   ├── index.ts             → Barrel export
+│   │   ├── useNodeDragDrop.ts   → Drag & drop logic
+│   │   ├── useFlowIO.ts         → Export/Import logic
+│   │   ├── useFlowSync.ts       → State synchronization
+│   │   └── useFlowExecution.ts  → Execution orchestration
+│   │
+│   ├── store/                   ✅ STATE MANAGEMENT LAYER
+│   │   │                        (Zustand - sliced by domain)
+│   │   ├── index.ts             → Combined store + selectors
+│   │   ├── flowStore.ts         → LEGACY (deprecated)
+│   │   │
+│   │   └── slices/              → Modular state slices
+│   │       ├── flowSlice.ts     → Flow CRUD operations
+│   │       ├── canvasSlice.ts   → Node/Edge management
+│   │       └── executionSlice.ts → Execution state
+│   │
+│   ├── services/                ✅ SERVICE LAYER
+│   │   │                        (Core business logic, pure)
+│   │   ├── executionEngine.ts   → Flow execution logic
+│   │   ├── apiClient.ts         → (Future) Backend API
+│   │   └── validators.ts        → (Future) Validation
+│   │
+│   ├── utils/                   ✅ UTILITY LAYER
+│   │   │                        (Pure functions, helpers)
+│   │   ├── nodeUtils.ts         → Node creation & validation
+│   │   ├── storageUtils.ts      → LocalStorage operations
+│   │   └── jsonPath.ts          → (Future) JSONPath eval
+│   │
+│   ├── constants/               ✅ CONFIGURATION LAYER
+│   │   └── index.ts             → All constants, defaults
+│   │
+│   ├── types/                   ✅ TYPE DEFINITIONS
+│   │   └── flow.ts              → TypeScript interfaces
+│   │
+│   ├── App.tsx                  → Main application
+│   ├── main.tsx                 → Entry point
+│   └── index.css                → Tailwind + custom styles
+│
+├── package.json
+├── tailwind.config.js
+├── tsconfig.json
+├── vite.config.ts
+├── ARCHITECTURE.md              → This document
+└── README.md
+
+=================================================================
+🏛️ ARCHITECTURAL LAYERS
+=================================================================
+
+Layer 1: PRESENTATION (React Components)
+├── Responsibility: Render UI only
+├── Rules:
+│   • No business logic
+│   • No direct API calls
+│   • Props/hooks only
+│   • Presentational components
+└── Example: Toolbar.tsx uses hooks, doesn't call axios
+
+Layer 2: BUSINESS LOGIC (Custom Hooks)
+├── Responsibility: Reusable logic
+├── Rules:
+│   • Encapsulate specific feature logic
+│   • Use store selectors
+│   • Return clean API
+│   • Testable in isolation
+└── Example: useFlowExecution() handles all execution logic
+
+Layer 3: STATE MANAGEMENT (Zustand Slices)
+├── Responsibility: Global state
+├── Rules:
+│   • Sliced by domain (flow, canvas, execution)
+│   • Immutable updates
+│   • Actions + state together
+│   • Performance via selectors
+└── Example: flowSlice handles flow CRUD, canvasSlice handles nodes
+
+Layer 4: SERVICE (Business Services)
+├── Responsibility: Core domain logic
+├── Rules:
+│   • Framework-agnostic (no React)
+│   • Pure functions or classes
+│   • Easily testable
+│   • Can be reused in backend
+└── Example: ExecutionEngine class executes flows
+
+Layer 5: UTILITIES (Helper Functions)
+├── Responsibility: Shared helpers
+├── Rules:
+│   • Pure functions
+│   • No side effects
+│   • Single responsibility
+│   • Highly reusable
+└── Example: generateNodeId(), validateNodeData()
+
+Layer 6: CONSTANTS (Configuration)
+├── Responsibility: App configuration
+├── Rules:
+│   • Centralized values
+│   • Type-safe with 'as const'
+│   • No logic
+│   • Easy to modify
+└── Example: NODE_TYPES, HTTP_METHODS, COLORS
+
+=================================================================
+🔄 DATA FLOW DIAGRAM
+=================================================================
+
+USER ACTION: Drag node to canvas
+│
+├→ Sidebar.tsx (onDragStart)
+│   └→ useNodeDragDrop() hook
+│       └→ onDragStart() sets data transfer
+│
+├→ App.tsx (onDrop)
+│   └→ useNodeDragDrop() hook
+│       └→ onDrop(event, reactFlowInstance)
+│           └→ createNode() utility
+│               └→ addNode() action (canvasSlice)
+│                   └→ Zustand store updates
+│                       └→ FlowCanvas re-renders
+│                           └→ React Flow displays node
+
+---
+
+USER ACTION: Click "Run Flow"
+│
+├→ Toolbar.tsx (onClick)
+│   └→ useFlowExecution() hook
+│       └→ executeFlow()
+│           └→ ExecutionEngine service
+│               ├→ buildExecutionOrder()
+│               ├→ executeNode() for each
+│               │   ├→ executeHttpRequest()
+│               │   ├→ executeVariableExtractor()
+│               │   └→ executeAssertion()
+│               └→ Callbacks:
+│                   ├→ onNodeUpdate() → updateNode() → Visual feedback
+│                   └→ onResult() → addExecutionResult() → Results stored
+
+---
+
+USER ACTION: Export flow
+│
+├→ Toolbar.tsx (onClick)
+│   └→ useFlowIO() hook
+│       └→ exportFlow()
+│           └→ exportFlowAsJson() utility
+│               └→ JSON.stringify(currentFlow)
+│                   └→ Display in modal
+
+=================================================================
+🎯 STATE MANAGEMENT PATTERN
+=================================================================
+
+ZUSTAND SLICES (Separated by Domain)
+
+┌─────────────────────────────────────────────────────────────┐
+│  flowSlice                                                   │
+│  • flows: FlowConfig[]                                       │
+│  • currentFlow: FlowConfig | null                            │
+│  • createFlow()                                              │
+│  • loadFlow()                                                │
+│  • updateFlow()                                              │
+│  • deleteFlow()                                              │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  canvasSlice                                                 │
+│  • nodes: Node[]                                             │
+│  • edges: Edge[]                                             │
+│  • selectedNodeId: string | null                             │
+│  • addNode()                                                 │
+│  • updateNode()                                              │
+│  • deleteNode()                                              │
+│  • addEdge()                                                 │
+│  • deleteEdge()                                              │
+│  • clearCanvas()                                             │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  executionSlice                                              │
+│  • executionContext: ExecutionContext | null                 │
+│  • isExecuting: boolean                                      │
+│  • executionResults: Map<string, Result>                     │
+│  • startExecution()                                          │
+│  • stopExecution()                                           │
+│  • addExecutionResult()                                      │
+│  • setVariable()                                             │
+│  • getVariable()                                             │
+└─────────────────────────────────────────────────────────────┘
+
+COMBINED IN: src/store/index.ts
+export type AppStore = FlowSlice & CanvasSlice & ExecutionSlice
+
+=================================================================
+🎣 CUSTOM HOOKS PATTERN
+=================================================================
+
+Hook: useNodeDragDrop
+├── Purpose: Handle drag & drop interactions
+├── Returns: { onDragStart, onDragOver, onDrop }
+├── Used by: App.tsx, Sidebar.tsx
+└── Dependencies: useAppStore, createNode utility
+
+Hook: useFlowIO
+├── Purpose: Export/import operations
+├── Returns: { exportFlow, importFlow, downloadFlow, importFromFile }
+├── Used by: Toolbar.tsx
+└── Dependencies: useAppStore, storageUtils
+
+Hook: useFlowExecution
+├── Purpose: Execute flow logic
+├── Returns: { executeFlow, abortExecution, isExecuting }
+├── Used by: Toolbar.tsx
+└── Dependencies: useAppStore, ExecutionEngine service
+
+Hook: useFlowSync
+├── Purpose: Sync canvas ↔ store
+├── Returns: void (side effects only)
+├── Used by: FlowCanvas.tsx
+└── Dependencies: useAppStore
+
+=================================================================
+🔧 SERVICE LAYER PATTERN
+=================================================================
+
+Service: ExecutionEngine
+├── Type: Class
+├── Purpose: Execute flows sequentially
+├── Public Methods:
+│   ├── executeFlow(nodes, edges, callbacks)
+│   └── abort()
+├── Private Methods:
+│   ├── executeNode(node)
+│   ├── executeHttpRequest(node, result)
+│   ├── executeVariableExtractor(node, result)
+│   ├── executeAssertion(node, result)
+│   ├── executeDelay(node, result)
+│   ├── buildExecutionOrder(nodes, edges, startNodeId)
+│   ├── substituteVariables(input)
+│   └── evaluateJsonPath(data, path)
+└── Benefits:
+    • Framework-agnostic (can run in Node.js)
+    • Fully testable
+    • No React dependencies
+    • Can be used by backend
+
+=================================================================
+📊 MODULARITY BENEFITS
+=================================================================
+
+✅ SEPARATION OF CONCERNS
+   • UI components don't know about storage
+   • Hooks don't know about React Flow internals
+   • Services don't know about React
+
+✅ REUSABILITY
+   • Hooks can be used in multiple components
+   • Utils can be used anywhere
+   • Services can be used in backend
+
+✅ TESTABILITY
+   • Each layer tested independently
+   • Mocking is straightforward
+   • No complex setup needed
+
+✅ SCALABILITY
+   • Add new node types without touching store
+   • Add new slices without refactoring existing
+   • Add new services without affecting UI
+
+✅ MAINTAINABILITY
+   • Clear file organization
+   • Easy to onboard new developers
+   • Minimal cognitive load
+
+=================================================================
+🎨 COMPONENT COMMUNICATION
+=================================================================
+
+Components communicate through:
+
+1. PROPS (Parent → Child)
+   Parent passes data down to children
+
+2. HOOKS (Component → Store)
+   Components use hooks to access/mutate state
+
+3. CALLBACKS (Child → Parent)
+   React Flow callbacks bubble up events
+
+4. STORE SELECTORS (Store → Component)
+   Components subscribe to specific state slices
+
+=================================================================
+🔐 BEST PRACTICES ENFORCED
+=================================================================
+
+✅ Immutable State Updates
+   • Zustand creates new state objects
+   • No direct mutations
+   • Predictable state changes
+
+✅ Single Source of Truth
+   • Store is the only truth
+   • Components are derived state
+   • No conflicting state
+
+✅ Type Safety
+   • Full TypeScript coverage
+   • Interfaces for all data
+   • No runtime type errors
+
+✅ Performance
+   • Selector-based re-renders
+   • Memoized callbacks
+   • Optimized React Flow
+
+✅ Error Handling
+   • Try-catch in all async ops
+   • User-friendly messages
+   • Graceful degradation
+
+=================================================================
+📚 IMPORT CONVENTIONS
+=================================================================
+
+// ✅ GOOD: Clean barrel imports
+import { useFlowIO, useFlowExecution } from '../hooks';
+import { NODE_TYPES, HTTP_METHODS } from '../constants';
+
+// ❌ BAD: Direct imports
+import { useFlowIO } from '../hooks/useFlowIO';
+import { useFlowExecution } from '../hooks/useFlowExecution';
+
+// ✅ GOOD: Named exports
+export const useFlowIO = () => {...};
+
+// ❌ BAD: Default exports for utilities
+export default function useFlowIO() {...}
+
+=================================================================
+🚀 READY FOR PRODUCTION
+=================================================================
+
+This architecture supports:
+
+✅ Multiple developers working simultaneously
+✅ Easy feature additions
+✅ Comprehensive testing
+✅ Backend integration
+✅ Micro-frontend architecture
+✅ Server-side rendering (if needed)
+✅ Code splitting
+✅ Progressive Web App (PWA)
+
+=================================================================
+
+Built with ❤️ following React + TypeScript best practices
+Date: April 1, 2026
+
+=================================================================
+

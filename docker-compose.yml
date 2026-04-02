@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: loadforge-db
+    environment:
+      POSTGRES_DB: loadforge
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis for real-time metrics and caching
+  redis:
+    image: redis:7-alpine
+    container_name: loadforge-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # LoadForge API
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: loadforge-api
+    ports:
+      - "5000:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=loadforge;Username=postgres;Password=postgres"
+      ConnectionStrings__Redis: "redis:6379"
+      Jwt__Secret: "your-super-secret-key-that-is-at-least-32-characters-long"
+      AllowedOrigins: "http://localhost:4200"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # LoadForge Worker (for background jobs)
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.worker
+    container_name: loadforge-worker
+    environment:
+      ConnectionStrings__DefaultConnection: "Host=postgres;Port=5432;Database=loadforge;Username=postgres;Password=postgres"
+      ConnectionStrings__Redis: "redis:6379"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Angular Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: loadforge-ui
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  redis_data:
+

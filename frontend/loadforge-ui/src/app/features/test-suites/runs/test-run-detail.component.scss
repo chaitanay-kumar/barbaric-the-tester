@@ -1,0 +1,192 @@
+.test-run-detail { padding: 24px; }
+
+// Live progress banner
+.live-progress {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.live-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.live-spinner {
+  width: 32px; height: 32px; border: 3px solid #e0e7ff;
+  border-top-color: #4f46e5; border-radius: 50%;
+  animation: spin 0.8s linear infinite; flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.live-info {
+  flex: 1;
+  h2 { margin: 0; font-size: 16px; color: #1e1b4b; }
+  p { margin: 4px 0 0; font-size: 13px; color: #4338ca; }
+}
+.live-counts {
+  display: flex; gap: 12px;
+  .count { font-size: 14px; font-weight: 600;
+    &.passed { color: #166534; }
+    &.failed { color: #dc2626; }
+    &.skipped { color: #9ca3af; }
+  }
+}
+.progress-track {
+  height: 8px; background: #c7d2fe; border-radius: 4px; overflow: hidden;
+}
+.progress-fill {
+  height: 100%; background: #4f46e5; border-radius: 4px;
+  transition: width 0.3s ease;
+}
+.progress-pct {
+  text-align: right; font-size: 12px; font-weight: 600; color: #4338ca; margin-top: 4px;
+}
+.meta-running { color: #4f46e5; font-weight: 500; }
+
+.report-actions { display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+  .report-label { font-size: 13px; color: #6b7280; font-weight: 500; }
+  .btn-sm { padding: 5px 12px; border: 1px solid #d1d5db; border-radius: 6px; background: white; cursor: pointer; font-size: 12px; color: #374151;
+    &:hover { background: #f3f4f6; border-color: #4f46e5; color: #4f46e5; }
+  }
+}
+.summary-header { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 16px;
+  &.passed { border-left: 4px solid #22c55e; }
+  &.failed { border-left: 4px solid #ef4444; }
+  &.running { border-left: 4px solid #3b82f6; }
+  .summary-status { display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    .status-icon { font-size: 24px; }
+    h1 { margin: 0; font-size: 22px; }
+  }
+  .summary-stats { display: flex; gap: 32px; flex-wrap: wrap;
+    .stat { text-align: center;
+      .value { display: block; font-size: 24px; font-weight: 700; color: #111827;
+        &.big { font-size: 32px; color: #4f46e5; }
+        &.failed { color: #dc2626; }
+        &.skipped { color: #9ca3af; }
+      }
+      .label { font-size: 11px; color: #9ca3af; text-transform: uppercase; }
+    }
+  }
+}
+.pass-rate-visual { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #f3f4f6; margin-bottom: 24px;
+  .bar { height: 100%; transition: width 0.3s; }
+  .passed-bar { background: #22c55e; }
+  .failed-bar { background: #ef4444; }
+  .skipped-bar { background: #d1d5db; }
+}
+.section { margin-bottom: 24px;
+  h2 { font-size: 16px; margin-bottom: 12px; }
+}
+.execution-list { display: flex; flex-direction: column; gap: 4px; }
+.execution-item { background: white; border: 1px solid #e5e7eb; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+  &:hover { border-color: #a5b4fc; }
+  &.expanded { border-color: #4f46e5; }
+  &.failed { border-left: 3px solid #ef4444; }
+  &.passed { border-left: 3px solid #22c55e; }
+  &.skipped { border-left: 3px solid #d1d5db; }
+}
+.exec-summary { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    &.passed { background: #22c55e; } &.failed { background: #ef4444; } &.skipped { background: #d1d5db; }
+  }
+  .exec-status-code { font-family: 'Fira Code', monospace; font-size: 12px; font-weight: 600; color: #374151; min-width: 36px; }
+  .exec-name { font-size: 13px; color: #374151; flex: 1; }
+  .exec-duration { font-size: 12px; color: #9ca3af; }
+  .exec-error { font-size: 12px; color: #dc2626; max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+.exec-detail { padding: 0 14px 14px; border-top: 1px solid #f3f4f6;
+  .detail-block { margin-top: 12px;
+    label { display: block; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; margin-bottom: 4px; }
+    code { font-size: 12px; color: #374151; background: #f3f4f6; padding: 2px 6px; border-radius: 3px; }
+    pre { background: #1e1e2e; color: #cdd6f4; padding: 12px; border-radius: 6px; font-size: 11px; font-family: 'Fira Code', monospace;
+      overflow-x: auto; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow-y: auto; margin: 0; }
+  }
+}
+.meta { display: flex; gap: 20px; font-size: 12px; color: #9ca3af; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+.loading { text-align: center; padding: 60px; color: #9ca3af; }
+
+// Currently running test indicator
+.current-test {
+  background: #fef3c7;
+  border: 1px solid #fcd34d;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.current-test-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #92400e;
+}
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: #f59e0b;
+  border-radius: 50%;
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.3); opacity: 0.7; }
+}
+.current-test-info {
+  .test-name { font-weight: 600; color: #78350f; }
+}
+
+// Live feed of recent results
+.live-feed {
+  margin-top: 16px;
+  background: white;
+  border-radius: 8px;
+  padding: 12px;
+  h3 { margin: 0 0 10px; font-size: 13px; color: #374151; }
+}
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.feed-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #f9fafb;
+  border-radius: 6px;
+  font-size: 12px;
+  animation: slideIn 0.3s ease;
+  &.passed { border-left: 3px solid #22c55e; }
+  &.failed { border-left: 3px solid #ef4444; }
+  &.skipped { border-left: 3px solid #d1d5db; }
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.feed-status { font-size: 14px; }
+.feed-name { flex: 1; font-weight: 500; color: #374151; }
+.feed-code { font-family: monospace; font-size: 11px; color: #6b7280; background: #e5e7eb; padding: 2px 6px; border-radius: 3px; }
+.feed-duration { color: #9ca3af; min-width: 50px; text-align: right; }
+.feed-error { color: #dc2626; font-size: 11px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+// Button styles
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  &:hover { background: #b91c1c; }
+}
+.btn-sm { padding: 5px 10px; font-size: 11px; }
+

@@ -1,0 +1,15 @@
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/bin/Debug/net8.0/LoadForge.TestGeneration.deps.json
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/bin/Debug/net8.0/LoadForge.TestGeneration.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/bin/Debug/net8.0/LoadForge.TestGeneration.pdb
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/bin/Debug/net8.0/LoadForge.Core.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/bin/Debug/net8.0/LoadForge.Core.pdb
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.csproj.AssemblyReference.cache
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.GeneratedMSBuildEditorConfig.editorconfig
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.AssemblyInfoInputs.cache
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.AssemblyInfo.cs
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.csproj.CoreCompileInputs.cache
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForg.EE105832.Up2Date
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/refint/LoadForge.TestGeneration.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/LoadForge.TestGeneration.pdb
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.TestGeneration/obj/Debug/net8.0/ref/LoadForge.TestGeneration.dll

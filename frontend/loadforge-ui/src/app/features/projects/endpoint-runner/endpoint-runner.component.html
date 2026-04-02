@@ -1,0 +1,170 @@
+<div class="runner-panel" [formGroup]="form">
+  <!-- Top bar -->
+  <div class="runner-header">
+    <h3>{{ endpoint?.name || 'Request Runner' }}</h3>
+    <div class="runner-header-actions">
+      <button mat-stroked-button color="primary" (click)="saveEndpoint()" [disabled]="isSaving" *ngIf="endpoint?.id">
+        <mat-spinner *ngIf="isSaving" diameter="16"></mat-spinner>
+        <mat-icon *ngIf="!isSaving">save</mat-icon>
+        <span *ngIf="!isSaving">Save</span>
+      </button>
+      <button mat-icon-button (click)="close()" matTooltip="Close"><mat-icon>close</mat-icon></button>
+    </div>
+  </div>
+
+  <!-- URL Bar -->
+  <div class="url-bar">
+    <mat-form-field appearance="outline" class="method-select">
+      <mat-select formControlName="method">
+        <mat-option *ngFor="let m of httpMethods" [value]="m">
+          <span [style.color]="getMethodColor(m)" style="font-weight:700">{{ m }}</span>
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+    <mat-form-field appearance="outline" class="url-input">
+      <input matInput formControlName="url" placeholder="/api/users">
+    </mat-form-field>
+    <button mat-raised-button color="primary" class="send-btn" (click)="send()" [disabled]="isExecuting">
+      <mat-spinner *ngIf="isExecuting" diameter="18" class="inline-spinner"></mat-spinner>
+      <span *ngIf="!isExecuting">Send</span>
+    </button>
+  </div>
+
+  <!-- Environment selector -->
+  <div class="env-row" *ngIf="environments.length > 0">
+    <mat-form-field appearance="outline" class="env-select">
+      <mat-label>Environment</mat-label>
+      <mat-select formControlName="environmentId">
+        <mat-option value="">Default</mat-option>
+        <mat-option *ngFor="let e of environments" [value]="e.id">{{ e.name }} ({{ e.baseUrl }})</mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
+
+  <!-- Request tabs -->
+  <mat-tab-group [(selectedIndex)]="activeRequestTab" class="request-tabs">
+
+    <!-- Headers Tab -->
+    <mat-tab label="Headers">
+      <div class="tab-body">
+        <div class="kv-row" *ngFor="let h of headers.controls; let i = index" [formGroup]="$any(h)">
+          <mat-checkbox formControlName="enabled"></mat-checkbox>
+          <mat-form-field appearance="outline" class="kv-key">
+            <input matInput formControlName="key" placeholder="Key">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="kv-value">
+            <input matInput formControlName="value" placeholder="Value">
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeHeader(i)"><mat-icon>delete</mat-icon></button>
+        </div>
+        <button mat-stroked-button (click)="addHeader()"><mat-icon>add</mat-icon> Add Header</button>
+      </div>
+    </mat-tab>
+
+    <!-- Auth Tab -->
+    <mat-tab label="Auth">
+      <div class="tab-body">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Auth Type</mat-label>
+          <mat-select [value]="selectedAuthType" (selectionChange)="onAuthTypeChange($event.value)">
+            <mat-option value="none">No Auth</mat-option>
+            <mat-option value="bearer">Bearer Token</mat-option>
+            <mat-option value="apikey">API Key</mat-option>
+            <mat-option value="basic">Basic Auth</mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <div *ngIf="selectedAuthType === 'bearer'" class="auth-fields">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Token</mat-label>
+            <input matInput formControlName="authToken" placeholder="eyJhbGciOi...">
+          </mat-form-field>
+        </div>
+
+        <div *ngIf="selectedAuthType === 'apikey'" class="auth-fields">
+          <div class="kv-row">
+            <mat-form-field appearance="outline" class="kv-key">
+              <mat-label>Header Name</mat-label>
+              <input matInput formControlName="authKey" placeholder="X-API-Key">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="kv-value">
+              <mat-label>Value</mat-label>
+              <input matInput formControlName="authValue" placeholder="your-api-key">
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div *ngIf="selectedAuthType === 'basic'" class="auth-fields">
+          <div class="kv-row">
+            <mat-form-field appearance="outline" class="kv-key">
+              <mat-label>Username</mat-label>
+              <input matInput formControlName="basicUser">
+            </mat-form-field>
+            <mat-form-field appearance="outline" class="kv-value">
+              <mat-label>Password</mat-label>
+              <input matInput type="password" formControlName="basicPass">
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </mat-tab>
+
+    <!-- Body Tab -->
+    <mat-tab label="Body">
+      <div class="tab-body">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Request Body (JSON)</mat-label>
+          <textarea matInput formControlName="body" rows="8" class="code-textarea" placeholder='{"key": "value"}'></textarea>
+        </mat-form-field>
+      </div>
+    </mat-tab>
+
+    <!-- Query Params Tab -->
+    <mat-tab label="Params">
+      <div class="tab-body">
+        <div class="kv-row" *ngFor="let p of queryParams.controls; let i = index" [formGroup]="$any(p)">
+          <mat-form-field appearance="outline" class="kv-key">
+            <input matInput formControlName="key" placeholder="Key">
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="kv-value">
+            <input matInput formControlName="value" placeholder="Value">
+          </mat-form-field>
+          <button mat-icon-button color="warn" (click)="removeQueryParam(i)"><mat-icon>delete</mat-icon></button>
+        </div>
+        <button mat-stroked-button (click)="addQueryParam()"><mat-icon>add</mat-icon> Add Parameter</button>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+
+<!-- Response Section -->
+<div class="response-section" *ngIf="response">
+  <div class="response-meta">
+    <span class="status-badge" [style.background]="getStatusColor(response.statusCode)">
+      {{ response.statusCode }} {{ response.statusText }}
+    </span>
+    <span class="meta-item"><mat-icon>timer</mat-icon> {{ response.durationMs }}ms</span>
+    <span class="meta-item" *ngIf="response.responseSizeBytes"><mat-icon>data_usage</mat-icon> {{ formatBytes(response.responseSizeBytes) }}</span>
+  </div>
+
+  <div class="error-msg" *ngIf="response.error">
+    <mat-icon>error</mat-icon> {{ response.error }}
+  </div>
+
+  <mat-tab-group [(selectedIndex)]="activeResponseTab" *ngIf="!response.error">
+    <mat-tab label="Body">
+      <div class="response-body">
+        <pre class="json-output">{{ responseBodyFormatted }}</pre>
+      </div>
+    </mat-tab>
+    <mat-tab label="Headers ({{ response.responseHeaders?.length || 0 }})">
+      <div class="response-headers">
+        <div class="rh-row" *ngFor="let h of response.responseHeaders">
+          <span class="rh-key">{{ h.key }}</span>
+          <span class="rh-value">{{ h.value }}</span>
+        </div>
+      </div>
+    </mat-tab>
+  </mat-tab-group>
+</div>
+

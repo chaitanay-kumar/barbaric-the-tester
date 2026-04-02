@@ -1,0 +1,158 @@
+.test-run-list { padding: 24px; }
+.page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+  h1 { margin: 0; font-size: 22px; }
+}
+.btn { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500;
+  &.btn-primary { background: #4f46e5; color: white; &:hover { background: #4338ca; } &:disabled { opacity: 0.5; cursor: not-allowed; } }
+}
+.execute-form { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin-bottom: 24px;
+  h3 { margin: 0 0 16px; font-size: 16px; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .form-field { display: flex; flex-direction: column; gap: 4px;
+    label { font-size: 12px; font-weight: 600; color: #6b7280; }
+    select, input { padding: 8px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px;
+      &:focus { outline: none; border-color: #4f46e5; } }
+  }
+}
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px;
+  th { text-align: left; padding: 10px 12px; background: #f9fafb; border-bottom: 2px solid #e5e7eb; font-size: 11px; text-transform: uppercase; color: #6b7280; font-weight: 600; }
+  td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; }
+}
+.clickable-row { cursor: pointer; &:hover { background: #f5f3ff; } }
+.status-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600;
+  &.passed { background: #dcfce7; color: #166534; }
+  &.failed { background: #fee2e2; color: #991b1b; }
+  &.running { background: #dbeafe; color: #1e40af; }
+  &.pending { background: #f3f4f6; color: #6b7280; }
+  &.partial { background: #fef3c7; color: #92400e; }
+}
+td.passed { color: #166534; font-weight: 600; }
+td.failed { color: #dc2626; font-weight: 600; }
+td.skipped { color: #9ca3af; }
+.pass-rate { display: flex; align-items: center; gap: 8px;
+  .pass-rate-bar { height: 6px; border-radius: 3px; background: #22c55e; min-width: 2px; max-width: 80px; }
+  span { font-size: 12px; font-weight: 600; }
+}
+.loading, .empty-state { text-align: center; padding: 60px; color: #9ca3af; }
+
+// Execution progress banner
+.execution-progress {
+  background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+.progress-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.progress-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e0e7ff;
+  border-top-color: #4f46e5;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.progress-info {
+  strong { font-size: 16px; color: #1e1b4b; }
+  p { margin: 4px 0 0; font-size: 13px; color: #4338ca; }
+  .status-text { font-weight: 600; }
+  .progress-hint { color: #6366f1; font-size: 12px; }
+}
+.progress-bar-container {
+  height: 4px;
+  background: #c7d2fe;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-indeterminate {
+  height: 100%;
+  width: 40%;
+  background: #4f46e5;
+  border-radius: 2px;
+  animation: indeterminate 1.5s ease-in-out infinite;
+}
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(350%); }
+}
+
+// Active run highlight in table
+.active-run {
+  background: #eef2ff !important;
+  animation: pulse-bg 2s ease-in-out infinite;
+}
+@keyframes pulse-bg {
+  0%, 100% { background: #eef2ff; }
+  50% { background: #e0e7ff; }
+}
+
+// Running status dot pulse
+.dot-pulse {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  background: #3b82f6;
+  border-radius: 50%;
+  margin-right: 4px;
+  animation: dot-blink 1s ease-in-out infinite;
+}
+@keyframes dot-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+// Actions column
+td.actions {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+  border-radius: 4px;
+}
+
+.btn-danger {
+  background: #dc2626;
+  color: white;
+  border: none;
+  cursor: pointer;
+  &:hover {
+    background: #b91c1c;
+  }
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+  border: none;
+  cursor: pointer;
+  &:hover {
+    background: #4b5563;
+  }
+}
+
+.status-badge.cancelled {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.back-link {
+  font-size: 13px;
+  color: #6366f1;
+  text-decoration: none;
+  margin-right: 16px;
+  &:hover {
+    text-decoration: underline;
+  }
+}
+

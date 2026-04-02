@@ -1,0 +1,318 @@
+# System Architecture Overview
+
+## Introduction
+
+LoadForge is designed as a distributed, horizontally scalable performance testing platform. This document provides a comprehensive overview of the system architecture, design decisions, and component interactions.
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                              LOADFORGE PLATFORM                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                              │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                         PRESENTATION LAYER                           │   │
+│  │  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐  │   │
+│  │  │   Web Frontend   │  │   CLI Client     │  │   CI/CD Plugins  │  │   │
+│  │  │   (Angular 18)   │  │   (Go/Node)      │  │   (Jenkins/GH)   │  │   │
+│  │  └────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘  │   │
+│  └───────────┼─────────────────────┼─────────────────────┼─────────────┘   │
+│              │                     │                     │                  │
+│              └─────────────────────┼─────────────────────┘                  │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                           API GATEWAY                                │   │
+│  │  ┌──────────────────────────────────────────────────────────────┐  │   │
+│  │  │                    LoadForge.Api (.NET 8)                     │  │   │
+│  │  │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐            │  │   │
+│  │  │  │    Auth     │ │   Rate      │ │   RBAC      │            │  │   │
+│  │  │  │  (JWT)      │ │  Limiting   │ │  Policies   │            │  │   │
+│  │  │  └─────────────┘ └─────────────┘ └─────────────┘            │  │   │
+│  │  └──────────────────────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│              ┌─────────────────────┼─────────────────────┐                  │
+│              ▼                     ▼                     ▼                  │
+│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐            │
+│  │   PostgreSQL    │  │     Redis       │  │  Message Queue  │            │
+│  │   (Primary DB)  │  │ (Cache/Metrics) │  │    (Workers)    │            │
+│  └─────────────────┘  └─────────────────┘  └────────┬────────┘            │
+│                                                      │                      │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                        EXECUTION LAYER                               │   │
+│  │                                                                      │   │
+│  │  ┌─────────────┐  ┌─────────────────────────────────────────────┐  │   │
+│  │  │   Worker    │  │           Distributed Runners               │  │   │
+│  │  │   Service   │──│  ┌────────┐ ┌────────┐ ┌────────┐          │  │   │
+│  │  │             │  │  │Runner 1│ │Runner 2│ │Runner N│          │  │   │
+│  │  └─────────────┘  │  │ 5K VUs │ │ 5K VUs │ │ 5K VUs │          │  │   │
+│  │                   │  └────────┘ └────────┘ └────────┘          │  │   │
+│  │                   └─────────────────────────────────────────────┘  │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                    │                                        │
+│                                    ▼                                        │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                         TARGET SYSTEMS                               │   │
+│  │         (APIs, Microservices, Web Applications under test)          │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                              │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Core Design Principles
+
+### 1. Horizontal Scalability
+- **Stateless API servers**: Can be scaled behind a load balancer
+- **Distributed runners**: Each runner handles a portion of the load
+- **Sharded metrics**: Redis cluster for high-throughput metrics
+
+### 2. Multi-Tenancy
+- **Organization isolation**: Complete data separation
+- **Resource limits**: Per-organization quotas
+- **Audit trails**: All actions logged per tenant
+
+### 3. Fault Tolerance
+- **Runner failure handling**: Automatic redistribution of VUs
+- **Graceful degradation**: System continues with reduced capacity
+- **Data durability**: PostgreSQL with replication
+
+### 4. Security First
+- **Defense in depth**: Multiple security layers
+- **Encrypted secrets**: AES-256 at rest
+- **Zero trust**: All internal communication authenticated
+
+## Component Architecture
+
+### API Gateway (LoadForge.Api)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        LoadForge.Api                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                    Middleware Pipeline                    │  │
+│  │  ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐ │  │
+│  │  │ CORS   │→│ Auth   │→│ Rate   │→│ Audit  │→│ Error  │ │  │
+│  │  │        │ │ (JWT)  │ │ Limit  │ │ Log    │ │ Handle │ │  │
+│  │  └────────┘ └────────┘ └────────┘ └────────┘ └────────┘ │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                      Controllers                          │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │  │
+│  │  │   Auth   │ │ Projects │ │ Scenarios│ │ TestRuns │    │  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │  │
+│  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐    │  │
+│  │  │ Runners  │ │ Metrics  │ │ Imports  │ │ Schedules│    │  │
+│  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘    │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                   Service Layer                           │  │
+│  │  ┌────────────────┐ ┌────────────────┐                   │  │
+│  │  │ Domain Services│ │ Infrastructure │                   │  │
+│  │  │ - TestExecutor │ │ - DbContext    │                   │  │
+│  │  │ - MetricsAgg   │ │ - Redis        │                   │  │
+│  │  │ - Scheduler    │ │ - MessageQueue │                   │  │
+│  │  └────────────────┘ └────────────────┘                   │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Load Generator (LoadForge.Runner)
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                       Load Generator                             │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                   Scenario Executor                       │  │
+│  │  ┌────────────────────────────────────────────────────┐  │  │
+│  │  │              Stage Controller                       │  │  │
+│  │  │  - Manages VU ramp-up/down                         │  │  │
+│  │  │  - Controls test timing                            │  │  │
+│  │  │  - Handles stage transitions                       │  │  │
+│  │  └────────────────────────────────────────────────────┘  │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                  Virtual User Pool                        │  │
+│  │  ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐ ┌──────┐           │  │
+│  │  │ VU 1 │ │ VU 2 │ │ VU 3 │ │ VU 4 │ │ VU N │           │  │
+│  │  │      │ │      │ │      │ │      │ │      │           │  │
+│  │  │Async │ │Async │ │Async │ │Async │ │Async │           │  │
+│  │  │ I/O  │ │ I/O  │ │ I/O  │ │ I/O  │ │ I/O  │           │  │
+│  │  └──────┘ └──────┘ └──────┘ └──────┘ └──────┘           │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                   HTTP Client Pool                        │  │
+│  │  - SocketsHttpHandler with connection pooling            │  │
+│  │  - HTTP/2 multiplexing support                           │  │
+│  │  - Automatic retry with exponential backoff              │  │
+│  │  - Connection keep-alive                                 │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                              │                                   │
+│                              ▼                                   │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │                  Metrics Collector                        │  │
+│  │  - Per-request latency measurement                       │  │
+│  │  - Status code tracking                                  │  │
+│  │  - Error categorization                                  │  │
+│  │  - Percentile calculation (P50/P90/P95/P99)             │  │
+│  │  - Streaming to Redis                                    │  │
+│  └──────────────────────────────────────────────────────────┘  │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Data Flow
+
+### Test Execution Flow
+
+```
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│  User   │────▶│   API   │────▶│  Queue  │────▶│ Worker  │
+│         │     │         │     │         │     │         │
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
+                                                     │
+                                                     ▼
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│ Target  │◀────│ Runners │◀────│ Config  │◀────│  Assign │
+│   API   │     │         │     │  Dist   │     │   VUs   │
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
+     │
+     ▼
+┌─────────┐     ┌─────────┐     ┌─────────┐     ┌─────────┐
+│ Metrics │────▶│  Redis  │────▶│  Agg    │────▶│   DB    │
+│ Stream  │     │         │     │ Worker  │     │         │
+└─────────┘     └─────────┘     └─────────┘     └─────────┘
+```
+
+### Metrics Aggregation
+
+```
+Raw Metrics (per request)          Aggregated (per second)
+┌───────────────────────┐          ┌───────────────────────┐
+│ timestamp: 1708000001 │          │ timestamp: 1708000001 │
+│ latency: 45ms         │          │ total_requests: 1523  │
+│ status: 200           │    ──▶   │ failed_requests: 12   │
+│ success: true         │          │ p50: 42ms             │
+│ bytes: 1024           │          │ p95: 156ms            │
+└───────────────────────┘          │ p99: 312ms            │
+                                   │ rps: 1523             │
+                                   │ error_rate: 0.78%     │
+                                   └───────────────────────┘
+```
+
+## Database Schema Overview
+
+### Entity Relationship Diagram
+
+```
+┌──────────────────┐       ┌──────────────────┐
+│   Organization   │       │       User       │
+├──────────────────┤       ├──────────────────┤
+│ id               │◀──────│ organization_id  │
+│ name             │       │ email            │
+│ slug             │       │ role             │
+│ max_projects     │       │ password_hash    │
+│ max_vus          │       └──────────────────┘
+└────────┬─────────┘
+         │
+         │ 1:N
+         ▼
+┌──────────────────┐       ┌──────────────────┐
+│     Project      │       │   Environment    │
+├──────────────────┤       ├──────────────────┤
+│ id               │◀──────│ project_id       │
+│ organization_id  │       │ name             │
+│ name             │       │ base_url         │
+│ slug             │       │ is_default       │
+└────────┬─────────┘       └──────────────────┘
+         │
+    ┌────┴────┬─────────────┐
+    │         │             │
+    ▼         ▼             ▼
+┌────────┐ ┌────────┐ ┌────────────┐
+│Scenario│ │ApiColl │ │  TestRun   │
+├────────┤ ├────────┤ ├────────────┤
+│ name   │ │ name   │ │ run_number │
+│ type   │ │ source │ │ status     │
+│ stages │ │endpoints│ │ result     │
+└────────┘ └────────┘ │ metrics    │
+                      └────────────┘
+```
+
+## Network Architecture
+
+### Production Network Layout
+
+```
+                            ┌─────────────────┐
+                            │   Internet      │
+                            └────────┬────────┘
+                                     │
+                            ┌────────▼────────┐
+                            │  Load Balancer  │
+                            │   (nginx/ALB)   │
+                            └────────┬────────┘
+                                     │
+              ┌──────────────────────┼──────────────────────┐
+              │                      │                      │
+              ▼                      ▼                      ▼
+     ┌────────────────┐    ┌────────────────┐    ┌────────────────┐
+     │   API Node 1   │    │   API Node 2   │    │   API Node N   │
+     │  (Port 5000)   │    │  (Port 5000)   │    │  (Port 5000)   │
+     └────────┬───────┘    └────────┬───────┘    └────────┬───────┘
+              │                     │                      │
+              └─────────────────────┼──────────────────────┘
+                                    │
+         ┌──────────────────────────┼──────────────────────────┐
+         │                          │                          │
+         ▼                          ▼                          ▼
+┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
+│   PostgreSQL    │      │     Redis       │      │  Runner Network │
+│   Primary       │      │    Cluster      │      │                 │
+│   + Replica     │      │                 │      │  ┌───┐ ┌───┐   │
+└─────────────────┘      └─────────────────┘      │  │R1 │ │R2 │   │
+                                                   │  └───┘ └───┘   │
+                                                   └─────────────────┘
+```
+
+## Technology Decisions
+
+| Component | Technology | Rationale |
+|-----------|------------|-----------|
+| API | .NET 8 | Performance, async I/O, enterprise support |
+| Frontend | Angular 18 | TypeScript, signals, enterprise adoption |
+| Database | PostgreSQL | ACID, JSON support, reliability |
+| Cache | Redis | Speed, pub/sub, clustering |
+| Load Gen | .NET SocketsHttpHandler | High-perf HTTP, connection pooling |
+| Auth | JWT + BCrypt | Stateless, secure, standard |
+| Real-time | SignalR | WebSocket abstraction, .NET integration |
+
+## Scalability Targets
+
+| Metric | Target | Architecture Support |
+|--------|--------|---------------------|
+| Concurrent VUs | 100,000+ | Distributed runners |
+| Requests/sec | 500,000+ | Async I/O, connection pooling |
+| API Latency | < 50ms P99 | Caching, optimized queries |
+| Data Retention | 90 days | Time-series partitioning |
+| Concurrent Runs | 100+ | Horizontal worker scaling |
+
+## Next Steps
+
+- [Component Details](./components.md) - Deep dive into each component
+- [Security Architecture](./security.md) - Security implementation details
+- [Data Flow](./data-flow.md) - Detailed data flow diagrams
+

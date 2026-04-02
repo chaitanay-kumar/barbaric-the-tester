@@ -1,0 +1,139 @@
+.runner-panel {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-top: 12px;
+}
+
+.runner-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  h3 { margin: 0; font-size: 15px; font-weight: 600; }
+}
+
+.runner-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// URL Bar
+.url-bar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  align-items: flex-start;
+}
+
+.method-select { width: 130px; }
+.url-input { flex: 1; }
+
+.send-btn {
+  height: 56px;
+  min-width: 90px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.inline-spinner { display: inline-block; }
+
+// Env
+.env-row { padding: 0 16px 8px; }
+.env-select { width: 300px; }
+
+// Tabs
+.request-tabs { padding: 0 16px; }
+.tab-body { padding: 12px 0; }
+
+// Key-Value rows
+.kv-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 4px;
+}
+.kv-key { flex: 1; }
+.kv-value { flex: 2; }
+
+.full-width { width: 100%; }
+
+.auth-fields { margin-top: 8px; }
+
+.code-textarea {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+// Response
+.response-section {
+  border-top: 2px solid #e0e0e0;
+  margin-top: 12px;
+  padding: 16px;
+}
+
+.response-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.status-badge {
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 12px;
+  border-radius: 4px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: #666;
+  mat-icon { font-size: 16px; width: 16px; height: 16px; }
+}
+
+.error-msg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f44336;
+  padding: 12px;
+  background: #ffebee;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.response-body {
+  max-height: 400px;
+  overflow: auto;
+}
+
+.json-output {
+  background: #1e1e1e;
+  color: #d4d4d4;
+  padding: 16px;
+  border-radius: 6px;
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 0;
+}
+
+.response-headers { padding: 8px 0; }
+.rh-row {
+  display: flex;
+  padding: 4px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+.rh-key { font-weight: 600; width: 200px; flex-shrink: 0; font-size: 13px; }
+.rh-value { font-size: 13px; color: #666; word-break: break-all; }
+

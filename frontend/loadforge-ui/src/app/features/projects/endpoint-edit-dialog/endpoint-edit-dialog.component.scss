@@ -1,0 +1,89 @@
+::ng-deep .endpoint-edit-dialog {
+  .mat-mdc-dialog-container { border-radius: 12px; }
+}
+
+.dialog-title-icon {
+  mat-icon {
+    vertical-align: middle;
+    margin-right: 8px;
+    font-size: 22px;
+  }
+}
+
+.dialog-content {
+  min-width: 560px;
+  max-height: 70vh;
+}
+
+.url-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.method-field { width: 140px; flex-shrink: 0; }
+.url-field { flex: 1; }
+.full-width { width: 100%; }
+.timeout-field { width: 160px; }
+
+// Section label
+.section-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #555;
+  margin: 12px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+// Headers table
+.headers-table {
+  border: 1px solid #e8e8e8;
+  border-radius: 6px;
+  padding: 8px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.headers-header {
+  display: flex;
+  gap: 8px;
+  padding: 0 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+}
+
+.header-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 2px;
+}
+
+.hdr-enabled { width: 32px; flex-shrink: 0; }
+.hdr-key { flex: 1; }
+.hdr-value { flex: 2; }
+.hdr-action { width: 36px; flex-shrink: 0; }
+
+.add-header-btn {
+  margin-top: 4px;
+  font-size: 12px;
+}
+
+.code-input {
+  font-family: 'Fira Code', 'Consolas', 'Monaco', monospace;
+  font-size: 13px;
+  line-height: 1.5;
+}
+

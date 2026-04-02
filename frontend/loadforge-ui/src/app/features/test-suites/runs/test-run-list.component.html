@@ -1,0 +1,132 @@
+<div class="test-run-list">
+  <div class="page-header">
+    <a class="back-link" routerLink="/test-suites">← Back to Coverage</a>
+    <h1>Test Runs</h1>
+    <button class="btn btn-primary" (click)="showExecuteForm = !showExecuteForm" [disabled]="executing">
+      {{ showExecuteForm ? 'Cancel' : '▶ Execute Tests' }}
+    </button>
+  </div>
+
+  <!-- Execution Progress Banner -->
+  <div class="execution-progress" *ngIf="executing">
+    <div class="progress-content">
+      <div class="progress-spinner"></div>
+      <div class="progress-info">
+        <strong>🚀 Tests Running...</strong>
+        <p>Status: <span class="status-text">{{ activeRunStatus }}</span> · Elapsed: {{ elapsedSeconds }}s</p>
+        <p class="progress-hint">Tests are executing in the background. You'll be redirected to results when complete.</p>
+      </div>
+    </div>
+    <div class="progress-bar-container">
+      <div class="progress-bar-indeterminate"></div>
+    </div>
+  </div>
+
+  <!-- Execute Form -->
+  <div class="execute-form" *ngIf="showExecuteForm && !executing">
+    <h3>Execute Test Suite</h3>
+    <div class="form-grid">
+      <div class="form-field">
+        <label>Environment *</label>
+        <select [(ngModel)]="selectedEnvironmentId">
+          <option *ngFor="let env of environments" [value]="env.id">
+            {{ env.name }} ({{ env.baseUrl }})
+          </option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Auth Token (Bearer)</label>
+        <input type="password" [(ngModel)]="authToken" placeholder="JWT or API key...">
+      </div>
+      <div class="form-field">
+        <label>Severity Filter (optional)</label>
+        <select [(ngModel)]="severityFilter">
+          <option value="">All</option>
+          <option value="P0">P0 only</option>
+          <option value="P1">P1 only</option>
+          <option value="P2">P2 only</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Category Filter (optional)</label>
+        <select [(ngModel)]="categoryFilter">
+          <option value="">All</option>
+          <option value="Smoke">Smoke</option>
+          <option value="Validation">Validation</option>
+          <option value="Boundary">Boundary</option>
+          <option value="Negative">Negative</option>
+          <option value="Contract">Contract</option>
+          <option value="StateAwareCRUD">CRUD</option>
+        </select>
+      </div>
+      <div class="form-field">
+        <label>Description</label>
+        <input type="text" [(ngModel)]="runDescription" placeholder="Optional run description">
+      </div>
+    </div>
+    <button class="btn btn-primary" (click)="executeTests()" [disabled]="!selectedEnvironmentId">
+      🚀 Run Tests
+    </button>
+  </div>
+
+  <!-- Runs Table -->
+  <div *ngIf="loading && !executing" class="loading">Loading test runs...</div>
+
+  <div *ngIf="!loading && !executing && runs.length === 0" class="empty-state">
+    <p>No test runs yet. Execute a test suite to see results here.</p>
+  </div>
+
+  <div class="table-wrapper" *ngIf="!loading && runs.length > 0">
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Total</th>
+          <th>Passed</th>
+          <th>Failed</th>
+          <th>Skipped</th>
+          <th>Pass Rate</th>
+          <th>Duration</th>
+          <th>Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let run of runs" class="clickable-row"
+            [class.active-run]="run.id === activeRunId && executing">
+          <td (click)="viewDetail(run.id)">
+            <span class="status-badge" [ngClass]="getStatusClass(run.status)">
+              <span *ngIf="run.status === 'Running'" class="dot-pulse"></span>
+              {{ run.status }}
+            </span>
+          </td>
+          <td (click)="viewDetail(run.id)">{{ run.totalTests }}</td>
+          <td (click)="viewDetail(run.id)" class="passed">{{ run.passedTests }}</td>
+          <td (click)="viewDetail(run.id)" class="failed">{{ run.failedTests }}</td>
+          <td (click)="viewDetail(run.id)" class="skipped">{{ run.skippedTests }}</td>
+          <td (click)="viewDetail(run.id)">
+            <div class="pass-rate">
+              <div class="pass-rate-bar" [style.width.%]="run.passRate"></div>
+              <span>{{ run.passRate }}%</span>
+            </div>
+          </td>
+          <td (click)="viewDetail(run.id)">{{ run.durationSeconds }}s</td>
+          <td (click)="viewDetail(run.id)">{{ run.createdAt | date:'short' }}</td>
+          <td class="actions">
+            <button *ngIf="run.status === 'Running' || run.status === 'Pending'"
+                    class="btn btn-sm btn-danger"
+                    (click)="cancelRun(run.id); $event.stopPropagation()">
+              ✕ Cancel
+            </button>
+            <button *ngIf="run.status !== 'Running' && run.status !== 'Pending'"
+                    class="btn btn-sm btn-secondary"
+                    (click)="viewDetail(run.id); $event.stopPropagation()">
+              View
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+

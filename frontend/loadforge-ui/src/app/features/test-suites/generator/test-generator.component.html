@@ -1,0 +1,150 @@
+<div class="test-generator">
+  <a class="back-link" routerLink="/test-suites">← Back to Coverage</a>
+  <div class="page-header">
+    <h1>Generate Test Suite</h1>
+    <p>Upload an OpenAPI specification to generate deterministic test coverage</p>
+  </div>
+
+  <!-- Step 1: Upload/Paste OpenAPI Spec -->
+  <div class="section">
+    <h2>1. OpenAPI Specification</h2>
+    <div class="upload-area">
+      <div class="file-upload" (click)="fileInput.click()" (dragover)="$event.preventDefault()" (drop)="$event.preventDefault()">
+        <input #fileInput type="file" accept=".json,.yaml,.yml" (change)="onFileSelected($event)" hidden>
+        <div class="upload-icon">📄</div>
+        <p *ngIf="!fileName">Drop OpenAPI file here or click to browse</p>
+        <p *ngIf="fileName" class="file-selected">✅ {{ fileName }}</p>
+        <span class="hint">Supports .json, .yaml, .yml</span>
+      </div>
+      <div class="or-divider">OR</div>
+      <div class="paste-area">
+        <textarea
+          [(ngModel)]="openApiContent"
+          (input)="onPasteSpec()"
+          placeholder="Paste your OpenAPI JSON/YAML here..."
+          rows="10"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2: Generation Config -->
+  <div class="section">
+    <h2>2. Coverage Options</h2>
+    <div class="options-grid">
+      <label class="checkbox-option" [class.selected]="generateSmoke">
+        <input type="checkbox" [(ngModel)]="generateSmoke">
+        <div class="option-info">
+          <span class="option-name">🔥 Smoke Tests</span>
+          <span class="option-badge p0">P0</span>
+          <span class="option-desc">Valid requests, success responses, schema validation</span>
+        </div>
+      </label>
+      <label class="checkbox-option" [class.selected]="generateValidation">
+        <input type="checkbox" [(ngModel)]="generateValidation">
+        <div class="option-info">
+          <span class="option-name">✅ Validation Tests</span>
+          <span class="option-badge p1">P1</span>
+          <span class="option-desc">Missing fields, wrong types, invalid enums</span>
+        </div>
+      </label>
+      <label class="checkbox-option" [class.selected]="generateBoundary">
+        <input type="checkbox" [(ngModel)]="generateBoundary">
+        <div class="option-info">
+          <span class="option-name">📏 Boundary Tests</span>
+          <span class="option-badge p2">P2</span>
+          <span class="option-desc">Min/max lengths, numeric bounds, array limits</span>
+        </div>
+      </label>
+      <label class="checkbox-option" [class.selected]="generateNegative">
+        <input type="checkbox" [(ngModel)]="generateNegative">
+        <div class="option-info">
+          <span class="option-name">🚫 Negative Tests</span>
+          <span class="option-badge p1">P1</span>
+          <span class="option-desc">Auth failures (401/403), bad IDs (400/404)</span>
+        </div>
+      </label>
+      <label class="checkbox-option" [class.selected]="generateContract">
+        <input type="checkbox" [(ngModel)]="generateContract">
+        <div class="option-info">
+          <span class="option-name">📋 Contract Tests</span>
+          <span class="option-badge p1">P1</span>
+          <span class="option-desc">Response schema validation, headers</span>
+        </div>
+      </label>
+      <label class="checkbox-option" [class.selected]="generateCrud">
+        <input type="checkbox" [(ngModel)]="generateCrud">
+        <div class="option-info">
+          <span class="option-name">🔄 CRUD Sequences</span>
+          <span class="option-badge p0">P0</span>
+          <span class="option-desc">POST→GET→PUT→GET→DELETE→GET(404)</span>
+        </div>
+      </label>
+    </div>
+
+    <div class="advanced-options">
+      <div class="option-field">
+        <label>Seed (for reproducibility)</label>
+        <input type="number" [(ngModel)]="seed">
+      </div>
+      <div class="option-field">
+        <label>Test Data Prefix</label>
+        <input type="text" [(ngModel)]="testDataPrefix">
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: Generate -->
+  <div class="section">
+    <button class="btn btn-primary btn-lg" (click)="generate()" [disabled]="generating || !openApiContent">
+      <span *ngIf="!generating">🚀 Generate Deterministic Test Suite</span>
+      <span *ngIf="generating">⏳ Generating...</span>
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error-message">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Result -->
+  <div *ngIf="result" class="result-card">
+    <h2>✅ Test Suite Generated</h2>
+    <div class="result-grid">
+      <div class="result-stat">
+        <span class="value">{{ result.totalTestsGenerated }}</span>
+        <span class="label">Total Tests</span>
+      </div>
+      <div class="result-stat">
+        <span class="value">{{ result.endpointsCovered }}</span>
+        <span class="label">Endpoints</span>
+      </div>
+      <div class="result-stat">
+        <span class="value">{{ result.p0Tests }}</span>
+        <span class="label">P0 (Critical)</span>
+      </div>
+      <div class="result-stat">
+        <span class="value">{{ result.p1Tests }}</span>
+        <span class="label">P1 (High)</span>
+      </div>
+      <div class="result-stat">
+        <span class="value">{{ result.p2Tests }}</span>
+        <span class="label">P2 (Medium)</span>
+      </div>
+    </div>
+    <div class="result-breakdown">
+      <span>🔥 Smoke: {{ result.smokeTests }}</span>
+      <span>✅ Validation: {{ result.validationTests }}</span>
+      <span>📏 Boundary: {{ result.boundaryTests }}</span>
+      <span>🚫 Negative: {{ result.negativeTests }}</span>
+      <span>📋 Contract: {{ result.contractTests }}</span>
+      <span>🔄 CRUD: {{ result.crudTests }}</span>
+    </div>
+    <div class="result-meta">
+      <span>Seed: {{ result.seed }}</span>
+      <span>Collection: {{ result.collectionName }}</span>
+    </div>
+    <button class="btn btn-primary" (click)="viewTests()">View Generated Tests →</button>
+  </div>
+</div>
+

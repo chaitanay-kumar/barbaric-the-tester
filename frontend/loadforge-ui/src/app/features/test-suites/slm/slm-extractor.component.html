@@ -1,0 +1,138 @@
+<div class="slm-extractor">
+  <a class="back-link" routerLink="/test-suites">← Back to Coverage</a>
+  <div class="page-header">
+    <h1>🧠 AI Rule Extraction</h1>
+    <p>Extract structured business rules from PR descriptions, task text, or documentation.
+       The SLM identifies validation rules, constraints, and access patterns — then generates test cases flagged for human review.</p>
+  </div>
+
+  <div class="info-banner">
+    <span class="info-icon">ℹ️</span>
+    <div>
+      <strong>All SLM-generated tests require review.</strong>
+      They are flagged with <code>needs_review: true</code> and cannot gate CI by default.
+      AI is an enhancer — not the foundation. 85-90% of coverage comes from deterministic generation.
+    </div>
+  </div>
+
+  <!-- Input Section -->
+  <div class="section">
+    <h2>Input Text</h2>
+    <p class="hint">Paste a PR description, task requirements, API documentation, or any text describing business rules.</p>
+
+    <div class="examples">
+      <span class="examples-label">Try an example:</span>
+      <button *ngFor="let ex of exampleTexts" class="btn btn-sm" (click)="useExample(ex.text)">
+        {{ ex.label }}
+      </button>
+    </div>
+
+    <textarea
+      [(ngModel)]="inputText"
+      placeholder="Paste your PR description, task requirements, or API documentation here...
+
+Example:
+- End date must be after start date
+- Only Admin role can delete resources
+- When type is 'premium', tier field is required"
+      rows="12"
+    ></textarea>
+  </div>
+
+  <!-- Extract Button -->
+  <div class="section">
+    <button class="btn btn-primary btn-lg" (click)="extractRules()" [disabled]="extracting || !inputText.trim()">
+      <span *ngIf="!extracting">🧠 Extract Rules & Generate Tests</span>
+      <span *ngIf="extracting">⏳ Analyzing with SLM...</span>
+    </button>
+  </div>
+
+  <!-- Error -->
+  <div *ngIf="error" class="error-message">
+    ❌ {{ error }}
+  </div>
+
+  <!-- Result -->
+  <div *ngIf="result" class="result-section">
+    <div class="result-header">
+      <h2>✅ Extraction Complete</h2>
+      <div class="confidence-badge" [class.high]="result.confidence >= 0.7" [class.low]="result.confidence < 0.5">
+        Confidence: {{ (result.confidence * 100) | number:'1.0-0' }}%
+      </div>
+    </div>
+
+    <div class="result-stats">
+      <div class="stat">
+        <span class="value">{{ result.rulesExtracted }}</span>
+        <span class="label">Rules Found</span>
+      </div>
+      <div class="stat">
+        <span class="value">{{ result.testsGenerated }}</span>
+        <span class="label">Tests Generated</span>
+      </div>
+    </div>
+
+    <p class="result-message">{{ result.message }}</p>
+
+    <!-- Extracted Rules -->
+    <div *ngIf="result.rules.length > 0" class="rules-list">
+      <h3>Extracted Rules</h3>
+      <div *ngFor="let rule of result.rules" class="rule-card">
+        <div class="rule-header">
+          <span class="rule-icon">{{ getRuleTypeIcon(rule.type) }}</span>
+          <span class="rule-type">{{ getRuleTypeLabel(rule.type) }}</span>
+        </div>
+        <p class="rule-description">{{ rule.description }}</p>
+        <div class="rule-fields" *ngIf="rule.leftField || rule.rightField">
+          <code *ngIf="rule.leftField">{{ rule.leftField }}</code>
+          <span *ngIf="rule.operator" class="rule-op">{{ rule.operator }}</span>
+          <code *ngIf="rule.rightField">{{ rule.rightField }}</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="result-actions">
+      <button class="btn btn-primary" (click)="viewTestCases()">
+        View Generated Tests (needs review) →
+      </button>
+    </div>
+  </div>
+
+  <!-- Allowed Rule Types Reference -->
+  <div class="section reference">
+    <h3>Supported Rule Types</h3>
+    <div class="rule-types-grid">
+      <div class="rule-type-card">
+        <span class="icon">⚖️</span>
+        <strong>Comparison</strong>
+        <p>Field A must be >, >=, <, <=, ==, != Field B or value</p>
+      </div>
+      <div class="rule-type-card">
+        <span class="icon">🔗</span>
+        <strong>Conditional Required</strong>
+        <p>If field X = Y, then field Z is required</p>
+      </div>
+      <div class="rule-type-card">
+        <span class="icon">🔐</span>
+        <strong>Role Restriction</strong>
+        <p>Only specific roles can perform this action</p>
+      </div>
+      <div class="rule-type-card">
+        <span class="icon">🔄</span>
+        <strong>State Restriction</strong>
+        <p>Resource must be in specific state for action</p>
+      </div>
+      <div class="rule-type-card">
+        <span class="icon">🔢</span>
+        <strong>Numeric Limit</strong>
+        <p>Business-specific numeric bounds</p>
+      </div>
+      <div class="rule-type-card">
+        <span class="icon">📝</span>
+        <strong>Format Validation</strong>
+        <p>Field must match specific format (phone, postal, etc.)</p>
+      </div>
+    </div>
+  </div>
+</div>
+

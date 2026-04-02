@@ -1,0 +1,11 @@
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/bin/Debug/net8.0/LoadForge.Core.deps.json
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/bin/Debug/net8.0/LoadForge.Core.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/bin/Debug/net8.0/LoadForge.Core.pdb
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.GeneratedMSBuildEditorConfig.editorconfig
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.AssemblyInfoInputs.cache
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.AssemblyInfo.cs
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.csproj.CoreCompileInputs.cache
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/refint/LoadForge.Core.dll
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/LoadForge.Core.pdb
+/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Core/obj/Debug/net8.0/ref/LoadForge.Core.dll

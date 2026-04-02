@@ -1,0 +1,90 @@
+<div class="dashboard">
+  <h1>Welcome back, {{ currentUser?.firstName }}!</h1>
+
+  <!-- Stats Cards -->
+  <div class="stats-grid">
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon projects">folder</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.totalProjects }}</span>
+        <span class="stat-label">Projects</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon runs">play_circle</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.totalRuns }}</span>
+        <span class="stat-label">Total Runs</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon active">sync</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.activeRuns }}</span>
+        <span class="stat-label">Active Runs</span>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-icon class="stat-icon pass">check_circle</mat-icon>
+      <div class="stat-info">
+        <span class="stat-value">{{ stats.passRate }}%</span>
+        <span class="stat-label">Pass Rate</span>
+      </div>
+    </mat-card>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- Recent Projects -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Recent Projects</mat-card-title>
+        <button mat-button color="primary" routerLink="/projects">View All</button>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="projects.length > 0">
+          <mat-list-item *ngFor="let project of projects" [routerLink]="['/projects', project.id]" class="clickable">
+            <mat-icon matListItemIcon>folder_open</mat-icon>
+            <span matListItemTitle>{{ project.name }}</span>
+            <span matListItemLine>{{ project.scenarioCount }} scenarios · {{ project.environmentCount }} environments</span>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="projects.length === 0 && !isLoading" class="empty-state">
+          <mat-icon>folder_off</mat-icon>
+          <p>No projects yet. <a routerLink="/projects">Create one</a></p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Recent Test Runs -->
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Recent Test Runs</mat-card-title>
+        <button mat-button color="primary" routerLink="/runs">View All</button>
+      </mat-card-header>
+      <mat-card-content>
+        <mat-list *ngIf="recentRuns.length > 0">
+          <mat-list-item *ngFor="let run of recentRuns" [routerLink]="['/runs', run.id]" class="clickable">
+            <mat-icon matListItemIcon [class]="run.result === 'Pass' ? 'pass-icon' : 'fail-icon'">
+              {{ getResultIcon(run.result) }}
+            </mat-icon>
+            <span matListItemTitle>{{ run.scenarioName }} #{{ run.runNumber }}</span>
+            <span matListItemLine>
+              <mat-chip [color]="getStatusColor(run.status)" size="small">{{ run.status }}</mat-chip>
+              · {{ run.startedAt | date:'short' }}
+            </span>
+          </mat-list-item>
+        </mat-list>
+        <div *ngIf="recentRuns.length === 0 && !isLoading" class="empty-state">
+          <mat-icon>hourglass_empty</mat-icon>
+          <p>No test runs yet.</p>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <mat-spinner *ngIf="isLoading" class="center-spinner"></mat-spinner>
+</div>
+

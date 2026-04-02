@@ -1,0 +1,85 @@
+<div class="test-suite-dashboard">
+  <div class="page-header">
+    <h1>API Test Coverage</h1>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <p>Loading projects...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && projects.length === 0" class="empty-state">
+    <h3>No Projects Found</h3>
+    <p>Create a project first, then import an OpenAPI spec to generate your test suite.</p>
+  </div>
+
+  <div *ngIf="!loading && projects.length > 0">
+    <div class="project-section" *ngFor="let project of projects">
+      <div class="project-header">
+        <h2>{{ project.name }}</h2>
+        <span class="project-desc" *ngIf="project.description">{{ project.description }}</span>
+        <button class="btn btn-primary btn-sm" (click)="navigateToGenerator(project.id)">
+          <span class="icon">+</span> Generate Test Suite
+        </button>
+      </div>
+
+      <div *ngIf="getCollections(project).length === 0" class="empty-collections">
+        <p>No API collections yet. Click "Generate Test Suite" to import an OpenAPI spec.</p>
+      </div>
+
+      <div class="collections-grid" *ngIf="getCollections(project).length > 0">
+        <div class="collection-card" *ngFor="let col of getCollections(project)">
+          <div class="card-header">
+            <h3>{{ col.name }}</h3>
+            <span class="endpoint-count">{{ col.endpointCount }} endpoints</span>
+          </div>
+
+          <div class="coverage-stats" *ngIf="getCoverage(col.id) as coverage">
+            <div class="stat-row">
+              <span class="stat-label">Total Tests</span>
+              <span class="stat-value">{{ coverage.totalTests }}</span>
+            </div>
+            <div class="coverage-bar">
+              <div class="bar-segment smoke" [style.width.%]="coverage.totalTests ? (coverage.smokeTests / coverage.totalTests * 100) : 0" title="Smoke (P0)"></div>
+              <div class="bar-segment validation" [style.width.%]="coverage.totalTests ? (coverage.validationTests / coverage.totalTests * 100) : 0" title="Validation (P1)"></div>
+              <div class="bar-segment boundary" [style.width.%]="coverage.totalTests ? (coverage.boundaryTests / coverage.totalTests * 100) : 0" title="Boundary (P2)"></div>
+              <div class="bar-segment negative" [style.width.%]="coverage.totalTests ? (coverage.negativeTests / coverage.totalTests * 100) : 0" title="Negative (P1)"></div>
+              <div class="bar-segment contract" [style.width.%]="coverage.totalTests ? (coverage.contractTests / coverage.totalTests * 100) : 0" title="Contract (P1)"></div>
+              <div class="bar-segment crud" [style.width.%]="coverage.totalTests ? (coverage.crudTests / coverage.totalTests * 100) : 0" title="CRUD (P0)"></div>
+            </div>
+            <div class="coverage-legend">
+              <span class="legend-item"><span class="dot smoke"></span>Smoke</span>
+              <span class="legend-item"><span class="dot validation"></span>Validation</span>
+              <span class="legend-item"><span class="dot boundary"></span>Boundary</span>
+              <span class="legend-item"><span class="dot negative"></span>Negative</span>
+              <span class="legend-item"><span class="dot contract"></span>Contract</span>
+              <span class="legend-item"><span class="dot crud"></span>CRUD</span>
+            </div>
+            <div class="severity-summary">
+              <span class="severity p0">P0: {{ coverage.p0Tests }}</span>
+              <span class="severity p1">P1: {{ coverage.p1Tests }}</span>
+              <span class="severity p2">P2: {{ coverage.p2Tests }}</span>
+            </div>
+            <div *ngIf="coverage.needsReviewCount > 0" class="review-badge">
+              ⚠️ {{ coverage.needsReviewCount }} needs review
+            </div>
+          </div>
+
+          <div class="coverage-stats" *ngIf="!getCoverage(col.id)">
+            <p class="no-tests">No tests generated yet</p>
+          </div>
+
+          <div class="card-actions">
+            <button class="btn btn-sm" (click)="navigateToTestCases(project.id, col.id)">View Tests</button>
+            <button class="btn btn-sm" (click)="navigateToRuns(project.id, col.id)">View Runs</button>
+            <button class="btn btn-sm btn-ai" (click)="navigateToSlm(project.id, col.id)">🧠 AI Rules</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

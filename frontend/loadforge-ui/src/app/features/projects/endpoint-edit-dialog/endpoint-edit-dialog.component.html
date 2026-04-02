@@ -1,0 +1,92 @@
+<h2 mat-dialog-title>
+  <span class="dialog-title-icon">
+    <mat-icon>{{ isEdit ? 'edit' : 'add_circle' }}</mat-icon>
+  </span>
+  {{ isEdit ? 'Edit Endpoint' : 'Add Endpoint' }}
+</h2>
+
+<mat-dialog-content class="dialog-content">
+  <form [formGroup]="form">
+
+    <!-- Method + URL row -->
+    <div class="url-row">
+      <mat-form-field appearance="outline" class="method-field">
+        <mat-label>Method</mat-label>
+        <mat-select formControlName="method">
+          <mat-option *ngFor="let m of httpMethods" [value]="m">
+            <span [style.color]="getMethodColor(m)" style="font-weight:700">{{ m }}</span>
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="url-field">
+        <mat-label>URL / Path</mat-label>
+        <input matInput formControlName="url" placeholder="/api/users/:id">
+        <mat-hint>Supports environment variables</mat-hint>
+      </mat-form-field>
+    </div>
+
+    <!-- Name + Description -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Endpoint Name</mat-label>
+      <input matInput formControlName="name" placeholder="e.g. Get User Profile">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description (optional)</mat-label>
+      <textarea matInput formControlName="description" rows="2" placeholder="What does this endpoint do?"></textarea>
+    </mat-form-field>
+
+    <!-- Headers Section -->
+    <div class="section-label">
+      <mat-icon>list</mat-icon> Headers
+    </div>
+    <div class="headers-table">
+      <div class="headers-header">
+        <span class="hdr-enabled"></span>
+        <span class="hdr-key">Key</span>
+        <span class="hdr-value">Value</span>
+        <span class="hdr-action"></span>
+      </div>
+      <div class="header-row" *ngFor="let h of headersArray.controls; let i = index" [formGroup]="$any(h)">
+        <mat-checkbox formControlName="enabled" class="hdr-enabled"></mat-checkbox>
+        <mat-form-field appearance="outline" class="hdr-key">
+          <input matInput formControlName="key" placeholder="Content-Type">
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="hdr-value">
+          <input matInput formControlName="value" placeholder="application/json">
+        </mat-form-field>
+        <button mat-icon-button color="warn" class="hdr-action" (click)="removeHeader(i)" tabindex="-1">
+          <mat-icon>close</mat-icon>
+        </button>
+      </div>
+      <button mat-stroked-button class="add-header-btn" (click)="addHeader()" type="button">
+        <mat-icon>add</mat-icon> Add Header
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="section-label" *ngIf="form.get('method')?.value !== 'GET'">
+      <mat-icon>code</mat-icon> Request Body
+    </div>
+    <mat-form-field appearance="outline" class="full-width" *ngIf="form.get('method')?.value !== 'GET'">
+      <mat-label>JSON Body</mat-label>
+      <textarea matInput formControlName="requestBody" rows="6" class="code-input"
+        placeholder='{ "key": "value" }'></textarea>
+    </mat-form-field>
+
+    <!-- Timeout -->
+    <mat-form-field appearance="outline" class="timeout-field">
+      <mat-label>Timeout (ms)</mat-label>
+      <input matInput type="number" formControlName="timeoutMs">
+    </mat-form-field>
+
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="save()" [disabled]="form.invalid">
+    {{ isEdit ? 'Update Endpoint' : 'Add Endpoint' }}
+  </button>
+</mat-dialog-actions>
+

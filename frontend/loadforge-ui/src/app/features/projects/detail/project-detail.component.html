@@ -1,0 +1,272 @@
+<mat-spinner *ngIf="isLoading" class="center-spinner"></mat-spinner>
+
+<div *ngIf="project && !isLoading" class="project-detail">
+
+  <!-- Header: View Mode -->
+  <mat-card class="header-card" *ngIf="!isEditing">
+    <div class="header-top">
+      <div class="header-left">
+        <button mat-icon-button routerLink="/projects"><mat-icon>arrow_back</mat-icon></button>
+        <div>
+          <h1>{{ project.name }}</h1>
+          <p class="description" *ngIf="project.description">{{ project.description }}</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button mat-stroked-button (click)="startEditing()"><mat-icon>edit</mat-icon> Edit</button>
+        <button mat-stroked-button color="warn" (click)="deleteProject()"><mat-icon>delete</mat-icon> Delete</button>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Header: Edit Mode -->
+  <mat-card class="header-card edit-mode" *ngIf="isEditing">
+    <form [formGroup]="editForm" (ngSubmit)="saveProject()">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Project Name</mat-label>
+        <input matInput formControlName="name">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Description</mat-label>
+        <textarea matInput formControlName="description" rows="2"></textarea>
+      </mat-form-field>
+      <div class="form-actions">
+        <button mat-button type="button" (click)="cancelEditing()">Cancel</button>
+        <button mat-raised-button color="primary" type="submit" [disabled]="editForm.invalid">Save Changes</button>
+      </div>
+    </form>
+  </mat-card>
+
+  <!-- Tabs -->
+  <mat-card class="tabs-card">
+    <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="200ms">
+
+      <!-- Environments Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">dns</mat-icon>
+          Environments ({{ project.environments.length }})
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-toolbar">
+            <button mat-raised-button color="primary" (click)="toggleEnvForm()" *ngIf="!showEnvForm">
+              <mat-icon>add</mat-icon> Add Environment
+            </button>
+          </div>
+
+          <!-- Env Form -->
+          <div class="inline-form" *ngIf="showEnvForm">
+            <form [formGroup]="envForm" (ngSubmit)="saveEnvironment()">
+              <div class="form-row">
+                <mat-form-field appearance="outline">
+                  <mat-label>Name</mat-label>
+                  <input matInput formControlName="name" placeholder="e.g. Development">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="flex-grow">
+                  <mat-label>Base URL</mat-label>
+                  <input matInput formControlName="baseUrl" placeholder="http://localhost:5020">
+                </mat-form-field>
+                <mat-checkbox formControlName="isDefault" class="default-check">Default</mat-checkbox>
+              </div>
+              <div class="form-actions">
+                <button mat-button type="button" (click)="cancelEnvForm()">Cancel</button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="envForm.invalid">
+                  {{ editingEnvId ? 'Update' : 'Add' }}
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Env List -->
+          <div class="item-list" *ngIf="project.environments.length > 0">
+            <div class="item-row" *ngFor="let env of project.environments">
+              <mat-icon class="item-icon">dns</mat-icon>
+              <div class="item-info">
+                <div class="item-title">
+                  {{ env.name }}
+                  <span class="badge default-badge" *ngIf="env.isDefault">DEFAULT</span>
+                </div>
+                <div class="item-subtitle">{{ env.baseUrl }}</div>
+              </div>
+              <div class="item-actions">
+                <button mat-icon-button matTooltip="Edit" (click)="toggleEnvForm(env)"><mat-icon>edit</mat-icon></button>
+                <button mat-icon-button matTooltip="Delete" color="warn" (click)="deleteEnvironment(env)"><mat-icon>delete</mat-icon></button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="project.environments.length === 0 && !showEnvForm">
+            <mat-icon>dns</mat-icon>
+            <p>No environments configured yet.</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Collections Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">api</mat-icon>
+          Collections ({{ project.collections.length }})
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-toolbar">
+            <button mat-raised-button color="primary" (click)="toggleCollectionForm()" *ngIf="!showCollectionForm">
+              <mat-icon>add</mat-icon> Add Collection
+            </button>
+            <button mat-stroked-button (click)="toggleImportForm()" *ngIf="!showImportForm">
+              <mat-icon>upload_file</mat-icon> Import Postman / Swagger
+            </button>
+          </div>
+
+          <!-- Import Form -->
+          <div class="inline-form" *ngIf="showImportForm">
+            <h4 style="margin:0 0 8px">Import Collection</h4>
+            <p style="font-size:12px;color:#888;margin:0 0 8px">Paste Postman Collection JSON (v2.1) or OpenAPI/Swagger JSON below.</p>
+            <mat-form-field appearance="outline" class="full-width">
+              <mat-label>JSON Content</mat-label>
+              <textarea matInput [(ngModel)]="importContent" rows="8" placeholder='Paste Postman or Swagger JSON here...' style="font-family:monospace;font-size:12px"></textarea>
+            </mat-form-field>
+            <div class="form-actions">
+              <button mat-button (click)="toggleImportForm()">Cancel</button>
+              <button mat-raised-button color="primary" (click)="importCollection()" [disabled]="isImporting || !importContent.trim()">
+                <mat-spinner *ngIf="isImporting" diameter="18"></mat-spinner>
+                <span *ngIf="!isImporting">Import</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="inline-form" *ngIf="showCollectionForm">
+            <form [formGroup]="collectionForm" (ngSubmit)="saveCollection()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Collection Name</mat-label>
+                <input matInput formControlName="name" placeholder="e.g. Payment APIs">
+              </mat-form-field>
+              <div class="form-actions">
+                <button mat-button type="button" (click)="toggleCollectionForm()">Cancel</button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="collectionForm.invalid">Add</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- Collection list with expand -->
+          <div *ngIf="project.collections.length > 0">
+            <div *ngFor="let col of project.collections" class="collection-block">
+              <div class="item-row collection-header" (click)="toggleCollection(col)">
+                <mat-icon class="item-icon expand-icon">{{ expandedCollectionId === col.id ? 'expand_more' : 'chevron_right' }}</mat-icon>
+                <mat-icon class="item-icon">api</mat-icon>
+                <div class="item-info">
+                  <div class="item-title">{{ col.name }}</div>
+                  <div class="item-subtitle">{{ col.endpointCount }} endpoints</div>
+                </div>
+                <div class="item-actions" (click)="$event.stopPropagation()">
+                  <button mat-icon-button matTooltip="Delete" color="warn" (click)="deleteCollection(col)"><mat-icon>delete</mat-icon></button>
+                </div>
+              </div>
+
+              <!-- Expanded: Endpoints -->
+              <div class="collection-detail" *ngIf="expandedCollectionId === col.id">
+                <div class="endpoint-toolbar">
+                  <button mat-stroked-button color="primary" (click)="toggleEndpointForm()">
+                    <mat-icon>add</mat-icon> Add Endpoint
+                  </button>
+                </div>
+
+                <mat-spinner *ngIf="loadingEndpoints" diameter="24" class="small-spinner"></mat-spinner>
+
+
+                <!-- Endpoint List -->
+                <div class="endpoint-list" *ngIf="collectionEndpoints.length > 0 && !loadingEndpoints">
+                  <div class="endpoint-row" *ngFor="let ep of collectionEndpoints" [class.active]="runnerEndpoint?.id === ep.id">
+                    <span class="method-badge" [style.background]="getMethodColor(ep.method)">{{ ep.method }}</span>
+                    <div class="endpoint-info" (click)="openRunner(ep)" style="cursor:pointer">
+                      <div class="endpoint-name">{{ ep.name }}</div>
+                      <div class="endpoint-url">{{ ep.url }}</div>
+                    </div>
+                    <div class="item-actions always-visible">
+                      <button mat-icon-button matTooltip="Send Request" color="primary" (click)="openRunner(ep)"><mat-icon>play_arrow</mat-icon></button>
+                      <button mat-icon-button matTooltip="Edit Endpoint" (click)="toggleEndpointForm(ep)"><mat-icon>edit</mat-icon></button>
+                      <button mat-icon-button matTooltip="Delete" color="warn" (click)="deleteEndpoint(ep)"><mat-icon>delete</mat-icon></button>
+                    </div>
+                  </div>
+                </div>
+                <p class="empty-inline" *ngIf="collectionEndpoints.length === 0 && !loadingEndpoints && !showEndpointForm">No endpoints yet. Add one above.</p>
+
+                <!-- Endpoint Runner (Postman-like) -->
+                <app-endpoint-runner
+                  *ngIf="runnerEndpoint && runnerCollectionId === col.id"
+                  [projectId]="projectId"
+                  [collectionId]="expandedCollectionId || ''"
+                  [endpoint]="runnerEndpoint"
+                  [environments]="project.environments"
+                  (closed)="closeRunner()"
+                  (saved)="onEndpointSaved()">
+                </app-endpoint-runner>
+              </div>
+            </div>
+          </div>
+
+          <div class="empty-state" *ngIf="project.collections.length === 0 && !showCollectionForm">
+            <mat-icon>api</mat-icon>
+            <p>No API collections. Add one or import from Postman/OpenAPI.</p>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Scenarios Tab -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">science</mat-icon>
+          Scenarios ({{ project.scenarios.length }})
+        </ng-template>
+        <div class="tab-content">
+          <div class="tab-toolbar">
+            <button mat-raised-button color="primary" (click)="toggleScenarioForm()" *ngIf="!showScenarioForm">
+              <mat-icon>add</mat-icon> New Scenario
+            </button>
+          </div>
+
+          <div class="inline-form" *ngIf="showScenarioForm">
+            <form [formGroup]="scenarioForm" (ngSubmit)="saveScenario()">
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Scenario Name</mat-label>
+                <input matInput formControlName="name" placeholder="e.g. Peak Load Test">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="full-width">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="2"></textarea>
+              </mat-form-field>
+              <mat-form-field appearance="outline">
+                <mat-label>Execution Type</mat-label>
+                <mat-select formControlName="executionType">
+                  <mat-option *ngFor="let t of executionTypes" [value]="t">{{ t }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+              <div class="form-actions">
+                <button mat-button type="button" (click)="toggleScenarioForm()">Cancel</button>
+                <button mat-raised-button color="primary" type="submit" [disabled]="scenarioForm.invalid">Create</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="item-list" *ngIf="project.scenarios.length > 0">
+            <div class="item-row clickable" *ngFor="let s of project.scenarios" [routerLink]="['/scenarios', s.id]">
+              <mat-icon class="item-icon">science</mat-icon>
+              <div class="item-info">
+                <div class="item-title">{{ s.name }}</div>
+                <div class="item-subtitle"><span class="badge type-badge">{{ s.executionType }}</span></div>
+              </div>
+              <div class="item-actions" (click)="$event.stopPropagation()">
+                <button mat-icon-button matTooltip="Delete" color="warn" (click)="deleteScenario(s)"><mat-icon>delete</mat-icon></button>
+              </div>
+            </div>
+          </div>
+          <div class="empty-state" *ngIf="project.scenarios.length === 0 && !showScenarioForm">
+            <mat-icon>science</mat-icon>
+            <p>No scenarios yet. Create one to start performance testing.</p>
+          </div>
+        </div>
+      </mat-tab>
+
+    </mat-tab-group>
+  </mat-card>
+</div>
+

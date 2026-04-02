@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "dgSpecHash": "jxnHG4CRCRU=",
+  "success": true,
+  "projectFilePath": "/Users/chaitanya.namireddy/loadforge/backend/src/LoadForge.Runner/LoadForge.Runner.csproj",
+  "expectedPackageFiles": [
+    "/Users/chaitanya.namireddy/.nuget/packages/system.net.http.json/8.0.0/system.net.http.json.8.0.0.nupkg.sha512",
+    "/Users/chaitanya.namireddy/.nuget/packages/system.text.encodings.web/8.0.0/system.text.encodings.web.8.0.0.nupkg.sha512",
+    "/Users/chaitanya.namireddy/.nuget/packages/system.text.json/8.0.0/system.text.json.8.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
