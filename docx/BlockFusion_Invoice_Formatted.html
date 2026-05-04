@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice - BlockFusion Tech Private Limited</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 40px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #003366;
+            padding-bottom: 20px;
+        }
+        .company-info h1 {
+            color: #003366;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .company-info p {
+            color: #666;
+            font-size: 12px;
+            margin: 2px 0;
+        }
+        .invoice-title {
+            text-align: right;
+        }
+        .invoice-title h2 {
+            color: #003366;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .invoice-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+        .detail-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 3px solid #003366;
+        }
+        .detail-section h3 {
+            color: #003366;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+        .detail-section p {
+            margin: 4px 0;
+            color: #333;
+            line-height: 1.5;
+        }
+        .invoice-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+        .meta-item {
+            background-color: #f0f0f0;
+            padding: 12px;
+            border-radius: 4px;
+        }
+        .meta-item label {
+            font-weight: bold;
+            color: #003366;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .meta-item value {
+            color: #333;
+        }
+        .services-section {
+            margin-bottom: 30px;
+        }
+        .services-section h3 {
+            color: #003366;
+            font-size: 13px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table thead {
+            background-color: #003366;
+            color: white;
+        }
+        table th {
+            padding: 12px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: bold;
+            border: 1px solid #003366;
+        }
+        table td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            font-size: 12px;
+        }
+        table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            width: 100%;
+            margin-top: 20px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .total-label {
+            width: 250px;
+            font-weight: bold;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .total-amount {
+            width: 150px;
+            text-align: right;
+            border-bottom: 1px solid #999;
+            padding-right: 10px;
+        }
+        .grand-total {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 15px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #003366;
+        }
+        .grand-total-label {
+            width: 250px;
+            text-align: right;
+            padding-right: 10px;
+        }
+        .grand-total-amount {
+            width: 150px;
+            text-align: right;
+            padding: 10px;
+            background-color: #e6f2ff;
+            border: 2px solid #003366;
+            border-radius: 4px;
+        }
+        .payment-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 30px;
+            font-size: 12px;
+        }
+        .payment-box {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 4px;
+        }
+        .payment-box h4 {
+            color: #003366;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .payment-box p {
+            margin: 4px 0;
+            color: #333;
+            line-height: 1.5;
+        }
+        .declaration {
+            background-color: #fff8e6;
+            padding: 15px;
+            border-left: 3px solid #ff9800;
+            margin-bottom: 30px;
+            font-size: 11px;
+            line-height: 1.6;
+            color: #333;
+        }
+        .declaration h4 {
+            color: #ff9800;
+            margin-bottom: 8px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .signature-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-top: 40px;
+            font-size: 11px;
+        }
+        .signature-block {
+            text-align: center;
+        }
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            padding-top: 5px;
+            font-weight: bold;
+            color: #333;
+        }
+        .footer {
+            border-top: 2px solid #ddd;
+            margin-top: 30px;
+            padding-top: 15px;
+            font-size: 10px;
+            color: #666;
+            text-align: center;
+        }
+        .footer-divider {
+            margin: 10px 0;
+        }
+        @media print {
+            body {
+                background-color: white;
+                padding: 0;
+            }
+            .container {
+                box-shadow: none;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="company-info">
+                <h1>BlockFusion Tech</h1>
+                <p>BlockFusion Tech Private Limited</p>
+                <p>Hyderabad, Telangana, India</p>
+                <p style="margin-top: 8px;"><strong>CIN:</strong> [Company Registration Number]</p>
+                <p><strong>GSTIN:</strong> [18-digit GST Number]</p>
+            </div>
+            <div class="invoice-title">
+                <h2>INVOICE</h2>
+                <p style="color: #666; font-size: 13px;">Tax Invoice</p>
+            </div>
+        </div>
+
+        <!-- Party Details -->
+        <div class="invoice-details">
+            <div class="detail-section">
+                <h3>Billed From (Supplier)</h3>
+                <p><strong>BlockFusion Tech Private Limited</strong></p>
+                <p>Hyderabad, Telangana</p>
+                <p>India</p>
+                <p style="margin-top: 8px;"><strong>Email:</strong> invoicing@blockfusion.com</p>
+                <p><strong>Phone:</strong> +91-XXXXXXXXXX</p>
+            </div>
+            <div class="detail-section">
+                <h3>Billed To (Customer)</h3>
+                <p><strong>Metha Technologies FZCO</strong></p>
+                <p>Dubai, United Arab Emirates</p>
+                <p style="margin-top: 8px;"><strong>Email:</strong> accounts@metha.ae</p>
+                <p><strong>Contact Person:</strong> [Name]</p>
+            </div>
+        </div>
+
+        <!-- Invoice Meta Information -->
+        <div class="invoice-meta">
+            <div class="meta-item">
+                <label>Invoice No.</label>
+                <value>BF-INV-0426-001</value>
+            </div>
+            <div class="meta-item">
+                <label>Invoice Date</label>
+                <value>26 April 2026</value>
+            </div>
+            <div class="meta-item">
+                <label>Due Date</label>
+                <value>10 May 2026</value>
+            </div>
+            <div class="meta-item">
+                <label>Payment Terms</label>
+                <value>Net 15 Days</value>
+            </div>
+        </div>
+
+        <!-- Services Section -->
+        <div class="services-section">
+            <h3>Services Rendered</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">S.No</th>
+                        <th style="width: 50%;">Description</th>
+                        <th style="width: 15%;">Quantity</th>
+                        <th style="width: 15%;">Rate (AED)</th>
+                        <th style="width: 15%;">Amount (AED)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>IT Consulting & Technology Services - April 2026<br><small>Blockchain Advisory, Development Support, Technical Consulting</small></td>
+                        <td class="text-right">1</td>
+                        <td class="text-right">13,747.50</td>
+                        <td class="text-right">13,747.50</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Totals -->
+        <div class="totals">
+            <div class="total-row">
+                <div class="total-label">Subtotal (Goods & Services):</div>
+                <div class="total-amount">13,747.50</div>
+            </div>
+            <div class="total-row">
+                <div class="total-label">SGST (9%):</div>
+                <div class="total-amount">Not Applicable*</div>
+            </div>
+            <div class="total-row">
+                <div class="total-label">CGST (9%):</div>
+                <div class="total-amount">Not Applicable*</div>
+            </div>
+            <div class="grand-total">
+                <div class="grand-total-label">GRAND TOTAL:</div>
+                <div class="grand-total-amount">AED 13,747.50</div>
+            </div>
+        </div>
+
+        <!-- Tax Note -->
+        <div style="background-color: #fffacd; padding: 10px; border-left: 3px solid #ffcc00; margin-bottom: 20px; font-size: 10px; color: #333;">
+            <p><strong>*GST Exemption Note:</strong> As per GST rules, export of services outside India to an overseas customer is exempt from GST under Section 14 of IGST Rules, 2017. This invoice is issued on a tax-exempt basis.</p>
+        </div>
+
+        <!-- Payment Details -->
+        <div class="payment-section">
+            <div class="payment-box">
+                <h4>Payment Details</h4>
+                <p><strong>Amount Received:</strong> AED 13,747.50</p>
+                <p><strong>Mode of Payment:</strong> Bank Transfer (Inward Remittance)</p>
+                <p><strong>Payment Status:</strong> Received</p>
+                <p><strong>Date of Payment:</strong> 26 April 2026</p>
+            </div>
+            <div class="payment-box">
+                <h4>Bank Details</h4>
+                <p><strong>Bank Name:</strong> [Bank Name]</p>
+                <p><strong>Account Holder:</strong> BlockFusion Tech Pvt Ltd</p>
+                <p><strong>Account Number:</strong> [Account Number]</p>
+                <p><strong>IFSC Code:</strong> [IFSC Code]</p>
+            </div>
+        </div>
+
+        <!-- Declaration & Compliance -->
+        <div class="declaration">
+            <h4>Declaration</h4>
+            <p>We hereby certify that the above-mentioned IT Consulting & Technology Services have been duly provided to Metha Technologies FZCO as per the agreed terms and conditions. This invoice is issued against the inward remittance received from the customer for services rendered during the billing period. All services have been provided in accordance with the service agreement dated [Agreement Date].</p>
+            <p style="margin-top: 8px;">This is a digitally generated invoice and requires no physical signature as per applicable regulations.</p>
+        </div>
+
+        <!-- Purpose Code -->
+        <div style="background-color: #e8f5e9; padding: 10px; border-left: 3px solid #4caf50; margin-bottom: 30px; font-size: 11px; color: #333;">
+            <p><strong>RBI Purpose Code:</strong> P0805 - Software Consultancy Services</p>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <div class="signature-block">
+                <p>For and on behalf of</p>
+                <p><strong>BlockFusion Tech Private Limited</strong></p>
+                <div class="signature-line">Authorized Signatory</div>
+            </div>
+            <div class="signature-block">
+                <p>Customer Acknowledgment</p>
+                <p><strong>Metha Technologies FZCO</strong></p>
+                <div class="signature-line">Authorized Representative</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="footer-divider">
+                <p><strong>BlockFusion Tech Private Limited</strong> | Hyderabad, India</p>
+                <p>Email: invoicing@blockfusion.com | Website: www.blockfusion.com</p>
+            </div>
+            <div class="footer-divider" style="border-top: 1px solid #ccc; padding-top: 10px; margin-top: 10px;">
+                <p>This is a computer-generated document. This invoice is valid without a physical signature.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
